@@ -19,6 +19,10 @@
 *.exe
 *.out
 *.app
+parser
+initchain
+fullnode
 
 # Blockchain database directory
 blockchain
+
