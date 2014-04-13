@@ -29,25 +29,32 @@ using namespace std;
 using namespace std::placeholders;
 
 blockchain* chain = nullptr;
+// used in process_transaction
 mutex mtx;
 
 // map of transaction to payment address
 unordered_map<hash_digest, unordered_set<payment_address>*> common_addresses;
+
 // map of closure id to set of addresses, eventually change to closure,
 // each closure is a list of transactions
 unordered_map<uint32_t, unordered_set<payment_address>*> closure_map;
+
 // map of addresses to closure id
 unordered_map<payment_address, uint32_t> address_map;
 
 
 // Completion handler for when the blockchain has finished initializing.
 void blockchain_started(const std::error_code& ec);
+
 // Fetch the last block now that we have the height.
 void height_fetched(const std::error_code& ec, size_t last_height);
-void process_transaction(unordered_set<payment_address> *addresses);
+
+// populates data structure given a block
 void handle_block_fetch(
     const std::error_code& ec,  // Status of operation
     const block_type& blk);       // Block header
+
+// populates data structure given a transaction. called by block fetch
 
 void handle_trans_fetch(
    const std::error_code& ec,  // Status of operation
@@ -56,6 +63,10 @@ void handle_trans_fetch(
    hash_digest trans_hash,            // hash of the spending transaction
    uint32_t size
 );
+// addresses is list of inputs to a transaction, updates data structure 
+// accordingly
+void process_transaction(unordered_set<payment_address> *addresses);
+
 
 void blockchain_started(const std::error_code& ec)
 {
@@ -126,7 +137,6 @@ void handle_trans_fetch(
    uint32_t size           // pointer to number of addresses expected (pointer caused race conditions)
    )  
 {
-   mtx.lock();
    payment_address addr;
    if (extract(addr, (tx.outputs.begin() + index)->script)) { 
       unordered_set<payment_address> *addresses = common_addresses[trans_hash];
@@ -134,27 +144,28 @@ void handle_trans_fetch(
 	 addresses = new unordered_set<payment_address>();
 	 common_addresses[trans_hash] = addresses;
       }
+      // if address wasn't already inserted
       if (addresses->find(addr) == addresses->end()) {
 	 addresses->insert(addr);
       }
+      // check for case when addresses are used as inputs twice (if used more
+      // this fails
       else {
 	 size--;
       }
-      //log_info() << addresses->size() << " " << (size);
-      if (addresses->size() == size) {
-	 //log_info() << "hey";
-	 mtx.unlock();
+      // we have all the addresses we need, process it
+      if (addresses->size() == size) {	 
 	 process_transaction(addresses);
-	 mtx.lock();
 	 common_addresses.erase(trans_hash);
       }
    }
    else {
       size--;
    }
-   mtx.unlock();
 }
 
+// given a list of addresses in the same transaction, updates the
+// cluster mapping
 void process_transaction(unordered_set<payment_address> *addresses) {
    mtx.lock();
    static uint32_t cur_cluster = 1;
@@ -167,21 +178,26 @@ void process_transaction(unordered_set<payment_address> *addresses) {
       address_map[*addresses->begin()] = cluster_no;
    }
    
-   unordered_set<payment_address>* cluster = new unordered_set<payment_address>();
+   unordered_set<payment_address>* cluster = 
+      new unordered_set<payment_address>();
    cluster->insert(addresses->begin(), addresses->end());
+
+   // merging all clusters into one cluster
    for (auto addr = addresses->begin();
 	addr != addresses->end(); addr++) {
-      uint32_t cur_cluster_no = address_map[*addr];
-      if (cur_cluster_no != 0) {
-	 unordered_set<payment_address> *cur_cluster = closure_map[cur_cluster_no];
-	 if (cur_cluster_no != cluster_no) {
+      uint32_t cur_no = address_map[*addr];
+      // 0 is the empty cluster, so if it isn't 0 merge everything and erase old
+      if (cur_no != 0) {
+	 unordered_set<payment_address> *cur_cluster = closure_map[cur_no];
+	 
+	 if (cur_no != cluster_no) {
 	    cluster->insert(cur_cluster->begin(), cur_cluster->end());
-	    closure_map.erase(cur_cluster_no);
+	    closure_map.erase(cur_no);
 	 }
       }
       address_map[*addr] = cluster_no;
    }
-   
+   // make sure all addresses in the cluster have the right number
    for (auto addr = cluster->begin();
 	addr != cluster->end(); addr++) {
       address_map[*addr] = cluster_no;
@@ -205,6 +221,8 @@ int main()
     
     // Join them one by one.
     pool.join();
+
+    // code to print stuff out
     for (auto addr = address_map.begin();
 	 addr != address_map.end(); addr++) {
        uint32_t cluster_no = addr->second;
