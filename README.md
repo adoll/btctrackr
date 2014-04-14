@@ -8,11 +8,11 @@ dependencies are handled by the libbitcoin setup.
 1. Have libbitcoin setup (http://libbitcoin.dyne.org/download.html)
 2. Run make in parser/
 3. Run ./initchain blockchain
-4. Run ./fullnode for some period of time (this puts blocks in your blockchain)
-5. Run ./parser (It will output a listing of address -> cluster number, with a list of all addresses in that cluster underneath it).
+4. Run ./fullnode for some period of time
+5. Type stop and hit enter, you'll see a bunch of addresses and their closures
 
 #Next up:
-* Getting new blocks from the network and updating the structure accordingly
+* Getting new blocks from the network and updating the structure accordingly (Done -probably)
 * Adding extra information to clusters like transactions etc
 * Database integration
 
