@@ -15,19 +15,16 @@ priv.o: priv.cpp
 priv: priv.o
 	$(CXX) -o $@ $< $(LIBS)
 
-fullnode.o: fullnode.cpp
-	$(CXX) -o $@ -c $< $(CXXFLAGS)
-
-fullnode: fullnode.o
-	$(CXX) -o $@ $< $(LIBS)
-
 parser.o: parser.cpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS)
 
-parser: parser.o
-	$(CXX) -o $@ $< $(LIBS)
+fullnode.o: fullnode.cpp
+	$(CXX) -o $@ -c $< $(CXXFLAGS)
 
-all: initchain fullnode parser
+fullnode: fullnode.o parser.o
+	$(CXX) -o $@ $< parser.o $(LIBS)
+
+all: initchain fullnode 
 
 clean:
 	rm -f fullnode initchain parser
