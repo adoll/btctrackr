@@ -20,6 +20,7 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
+#include "db.hpp"
 #include <bitcoin/bitcoin.hpp>
 #include <unordered_set>
 using namespace bc;
@@ -57,6 +58,8 @@ private:
       const std::error_code& ec,  // Status of operation
       const block_type& blk);       // Block header
    void height_fetched(const std::error_code& ec, size_t last_height);
+
+   sql::Connection *con;
 
 };
 

@@ -30,6 +30,8 @@ parser::parser(blockchain* chainPtr) {
    chain = chainPtr;
    auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
    chain->fetch_last_height(height_fetched_func);
+
+   con = db_init_connection();
 }
    
 void parser::update(const block_type& blk) {
@@ -144,6 +146,7 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
       cluster_no = cur_cluster;
       cur_cluster++;
       address_map[*addresses->begin()] = cluster_no;
+      db_insert(con, addresses->begin()->encoded(), cluster_no);
    }
    
    unordered_set<payment_address>* cluster = 
@@ -164,12 +167,19 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
 	 }
       }
       address_map[*addr] = cluster_no;
+      db_insert(con, addr->encoded(), cluster_no);
    }
    // make sure all addresses in the cluster have the right number
+   
    for (auto addr = cluster->begin();
 	addr != cluster->end(); addr++) {
-      address_map[*addr] = cluster_no;
-   }
+      if (address_map[*addr] != cluster_no) {
+          address_map[*addr] = cluster_no;
+          db_insert(con, addr->encoded(), cluster_no);
+      }
+ 
+    }
+   
    closure_map[cluster_no] = cluster;
    mtx.unlock();
 }
