@@ -121,7 +121,7 @@ private:
    leveldb_blockchain chain_;
    poller poller_;
    transaction_pool txpool_;
-   transaction_indexer txidx_;
+   //transaction_indexer txidx_;
    // Mac OSX needs the bc:: namespace qualifier to compile.
    // Other systems should be OK.
    bc::session session_;
@@ -138,7 +138,7 @@ fullnode::fullnode()
      // Blockchain database service.
      chain_(disk_pool_),
      // Poll new blocks, and transaction memory pool.
-     poller_(mem_pool_, chain_), txpool_(mem_pool_, chain_), txidx_(mem_pool_),
+     poller_(mem_pool_, chain_), txpool_(mem_pool_, chain_), //txidx_(mem_pool_),
      // Session manager service. Convenience wrapper.
      session_(net_pool_, {
 	   handshake_, protocol_, chain_, poller_, txpool_})
@@ -152,11 +152,14 @@ void fullnode::handle_reorganize(
    const blockchain::block_list& added,     // New blocks added to blockchain
    const blockchain::block_list& removed    // Blocks removed (empty if none)
    ) {
-   log_info() << "here";
-   for (size_t i = 0; i < added.size(); ++i)
-   {
-      size_t height = fork_point + 1 + i;
-      parse->update(*added[i]);
+   if (!ec) {
+      for (size_t i = 0; i < added.size(); ++i)
+      {
+	 parse->update(*added[i]);
+      }
+   }
+   else {
+      log_error() << "Problem reorganizing" << ec.message();
    }
    auto handle = bind(&fullnode::handle_reorganize, this, _1, _2,
 		      _3, _4);
@@ -184,10 +187,8 @@ void fullnode::start()
    }
    parse = new parser(&chain_);
    auto handle = bind(&fullnode::handle_reorganize, this, _1, _2,
-				   _3, _4);
+		      _3, _4);
    chain_.subscribe_reorganize(handle);
-   // Start transaction pool
-   txpool_.start();
    // Fire off app.
    auto handle_start =
       std::bind(&fullnode::handle_start, this, _1);
@@ -218,16 +219,16 @@ void fullnode::stop()
 
    // code to print stuff out
    for (auto addr = parse->addressesBegin();
-	addr != parse->addressesEnd(); addr++) {
-      uint32_t cluster_no = addr->second;
-      log_info() << "Address: " << addr->first.encoded()  << " Cluster: " << cluster_no;
-      log_info() << "Rest of Cluster: \n --------------------------------------------------";
-      for (auto cluster_addr = parse->closure(addr->first)->begin();
-	   cluster_addr != parse->closure(addr->first)->end(); cluster_addr++) {
-	 log_info() << "Cluster Address: " << cluster_addr->encoded();
-      }
-      log_info() << "------------------------------------------------------------------------";
-   }
+     addr != parse->addressesEnd(); addr++) {
+     uint32_t cluster_no = addr->second;
+     log_info() << "Address: " << addr->first.encoded()  << " Cluster: " << cluster_no;
+     log_info() << "Rest of Cluster: \n --------------------------------------------------";
+     for (auto cluster_addr = parse->closure(addr->first)->begin();
+	  cluster_addr != parse->closure(addr->first)->end(); cluster_addr++) {
+	log_info() << "Cluster Address: " << cluster_addr->encoded();
+     }
+     log_info() << "------------------------------------------------------------------------";
+     }
 
    // Safely close blockchain database.
    chain_.stop();
@@ -236,10 +237,6 @@ void fullnode::stop()
 blockchain& fullnode::chain()
 {
    return chain_;
-}
-transaction_indexer& fullnode::indexer()
-{
-   return txidx_;
 }
 
 void fullnode::handle_start(const std::error_code& ec)
@@ -255,100 +252,8 @@ void fullnode::connection_started(const std::error_code& ec, channel_ptr node)
       log_warning() << "Couldn't start connection: " << ec.message();
       return;
    }
-   // Subscribe to transaction messages from this node.
-   node->subscribe_transaction(
-      std::bind(&fullnode::recv_tx, this, _1, _2, node));
-   // Stay subscribed to new connections.
    protocol_.subscribe_channel(
       std::bind(&fullnode::connection_started, this, _1, _2));
-}
-
-void fullnode::recv_tx(const std::error_code& ec,
-		       const transaction_type& tx, channel_ptr node)
-{
-   if (ec)
-   {
-      log_error() << "Receive transaction: " << ec.message();
-      return;
-   }
-   auto handle_deindex = [](const std::error_code& ec)
-      {
-	 if (ec)
-	    log_error() << "Deindex error: " << ec.message();
-      };
-   // Called when the transaction becomes confirmed in a block.
-   auto handle_confirm = [this, tx, handle_deindex](
-      const std::error_code& ec)
-      {
-	 log_debug() << "handle_confirm ec = " << ec.message()
-	 << " " << hash_transaction(tx);
-	 if (ec)
-	    log_error() << "Confirm error ("
-			<< hash_transaction(tx) << "): " << ec.message();
-	 txidx_.deindex(tx, handle_deindex);
-      };
-   // Validate the transaction from the network.
-   // Attempt to store in the transaction pool and check the result.
-   txpool_.store(tx, handle_confirm,
-		 std::bind(&fullnode::new_unconfirm_valid_tx, this, _1, _2, tx));
-   // Resubscribe to transaction messages from this node.
-   node->subscribe_transaction(
-      std::bind(&fullnode::recv_tx, this, _1, _2, node));
-}
-
-void fullnode::new_unconfirm_valid_tx(
-   const std::error_code& ec, const index_list& unconfirmed,
-   const transaction_type& tx)
-{
-   auto handle_index = [](const std::error_code& ec)
-      {
-	 if (ec)
-	    log_error() << "Index error: " << ec.message();
-      };
-   const hash_digest& tx_hash = hash_transaction(tx);
-   if (ec)
-   {
-      log_warning()
-	 << "Error storing memory pool transaction "
-	 << tx_hash << ": " << ec.message();
-   }
-   else
-   {
-      auto l = log_debug();
-      l << "Accepted transaction ";
-      if (!unconfirmed.empty())
-      {
-	 l << "(Unconfirmed inputs";
-	 for (auto idx: unconfirmed)
-	    l << " " << idx;
-	 l << ") ";
-      }
-      l << tx_hash;
-      txidx_.index(tx, handle_index);
-   }
-}
-
-void history_fetched(const std::error_code& ec,
-		     const blockchain::history_list& history)
-{
-   if (ec)
-   {
-      log_error() << "Failed to fetch history: " << ec.message();
-      return;
-   }
-   log_info() << "Query fine.";
-   for (const auto& row: history)
-   {
-      log_info() << "output: " << row.output
-		 << "  height: " << row.output_height;
-      log_info() << "value:  " << row.value;
-      auto l = log_info();
-      l << "spend:  ";
-      if (row.spend.hash == null_hash)
-	 l << "Unspent";
-      else
-	 l << row.spend << "  height: " << row.spend_height;
-   }
 }
 
 int main()
@@ -373,14 +278,6 @@ int main()
       std::getline(std::cin, addr);
       if (addr == "stop")
 	 break;
-      payment_address payaddr;
-      if (!payaddr.set_encoded(addr))
-      {
-	 log_error() << "Skipping invalid Bitcoin address.";
-	 continue;
-      }
-      fetch_history(app.chain(), app.indexer(),
-		    payaddr, history_fetched);
    }
    app.stop();
 

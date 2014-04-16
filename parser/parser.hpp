@@ -22,6 +22,7 @@
 
 #include <bitcoin/bitcoin.hpp>
 #include <unordered_set>
+#include <mutex>
 using namespace bc;
 using namespace std;
 class parser
@@ -37,7 +38,9 @@ private:
    blockchain* chain = nullptr;
    // used in process_transaction
    mutex mtx;
+   mutex mtx1;
    // map of transaction to payment address
+   unordered_map<hash_digest, uint32_t> trans_size_map;
    unordered_map<hash_digest, unordered_set<payment_address>*> common_addresses;
    // map of closure id to set of addresses, eventually change to closure,
    // each closure is a list of transactions
@@ -50,8 +53,7 @@ private:
       const std::error_code& ec,  // Status of operation
       const transaction_type& tx, // Transaction
       uint32_t index,             // Index within the current transaction
-      hash_digest trans_hash, // Hash of the transaction spending outputs
-      uint32_t size           // pointer to number of addresses expected (pointer caused race conditions
+      hash_digest trans_hash // Hash of the transaction spending outputs
       );
    void handle_block_fetch(
       const std::error_code& ec,  // Status of operation

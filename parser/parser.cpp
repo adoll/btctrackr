@@ -6,7 +6,7 @@
  * libbitcoin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) 
+ * Foundation, either version 3 of the License, or (at your option)
  * any later version. For more information see LICENSE.
  *
  * This program is distributed in the hope that it will be useful,
@@ -22,7 +22,6 @@
 */
 #include "parser.hpp"
 #include <future>
-#include <mutex>
 using namespace placeholders;
 
 // construct a parser, updating it to the current point in the blockchain
@@ -31,43 +30,42 @@ parser::parser(blockchain* chainPtr) {
    auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
    chain->fetch_last_height(height_fetched_func);
 }
-   
+
 void parser::update(const block_type& blk) {
    // iterate through all transactions of the block
-   for (auto trans = blk.transactions.begin(); trans != blk.transactions.end(); 
-	trans++) { 
+   for (auto trans = blk.transactions.begin(); trans != blk.transactions.end();
+	trans++) {
       // for every input, get the previous transaction hash
       if (!is_coinbase(*trans) && trans->inputs.size() > 1) {
 	 hash_digest trans_hash = hash_transaction(*trans);
-	 uint32_t inputs_size = trans->inputs.size();
+	 trans_size_map[trans_hash] = trans->inputs.size();
 	 // log_info() << "size" << inputs_size;
-	 for (auto inputs = trans->inputs.begin();
-	      inputs != trans->inputs.end(); inputs++) {
-	       
-	       
-	    auto handle_trans = bind(&parser::handle_trans_fetch, 
-				     this, _1, _2, 
-				     inputs->previous_output.index,
-				     hash_transaction(*trans),
-				     inputs_size);
-	       
-	    chain->fetch_transaction(inputs->previous_output.hash, 
+	 for (auto input = trans->inputs.begin();
+	      input != trans->inputs.end(); input++) {
+
+	    
+	    auto handle_trans = bind(&parser::handle_trans_fetch,
+				     this, _1, _2,
+				     input->previous_output.index,
+				     hash_transaction(*trans));
+
+	    chain->fetch_transaction(input->previous_output.hash,
 				     handle_trans);
 	 }
       }
    }
 }
-   
+
 unordered_set<payment_address>* parser::closure(payment_address addr) {
    uint32_t cluster_no = address_map[addr];
    if (cluster_no == 0) return NULL;
    else return closure_map[cluster_no];
 }
-   
+
 const unordered_map<payment_address, uint32_t>::iterator parser::addressesBegin() {
    return address_map.begin();
 }
- 
+
 const unordered_map<payment_address, uint32_t>::iterator parser::addressesEnd() {
    return address_map.end();
 }
@@ -101,34 +99,42 @@ void parser::handle_trans_fetch(
    const std::error_code& ec,  // Status of operation
    const transaction_type& tx, // Transaction
    uint32_t index,             // Index within the current transaction
-   hash_digest trans_hash, // Hash of the transaction spending outputs
-   uint32_t size           // pointer to number of addresses expected (pointer caused race conditions)
-   )  
+   hash_digest trans_hash // Hash of the transaction spending outputs
+   )
 {
-   payment_address addr;
-   if (extract(addr, (tx.outputs.begin() + index)->script)) { 
-      unordered_set<payment_address> *addresses = common_addresses[trans_hash];
-      if (addresses == NULL) {
-	 addresses = new unordered_set<payment_address>();
-	 common_addresses[trans_hash] = addresses;
-      }
-      // if address wasn't already inserted
-      if (addresses->find(addr) == addresses->end()) {
-	 addresses->insert(addr);
-      }
-      // check for case when addresses are used as inputs twice (if used more
-      // this fails
-      else {
-	 size--;
-      }
-      // we have all the addresses we need, process it
-      if (addresses->size() == size) {	 
-	 process_transaction(addresses);
-	 common_addresses.erase(trans_hash);
-      }
+   if (ec) {
+      log_info() << "trans fetch fail" << ec.message();
    }
    else {
-      size--;
+      mtx1.lock();
+      uint32_t size = trans_size_map[trans_hash];
+      log_info() << size;
+      payment_address addr;
+      if (extract(addr, (tx.outputs.begin() + index)->script)) {
+	 unordered_set<payment_address> *addresses = common_addresses[trans_hash];
+	 if (addresses == NULL) {
+	    addresses = new unordered_set<payment_address>();
+	    common_addresses[trans_hash] = addresses;
+	 }
+	 // if address wasn't already inserted
+	 if (addresses->find(addr) == addresses->end()) {
+	    addresses->insert(addr);
+	 }
+	 // check for case when addresses are used as inputs twice
+	 else {
+	    trans_size_map[trans_hash] = size - 1;
+	 }
+	 // we have all the addresses we need, process it
+	 if (addresses->size() == size) {
+	    process_transaction(addresses);
+	    trans_size_map.erase(trans_hash);
+	    //common_addresses.erase(trans_hash);
+	 }
+      }
+      else {
+	 trans_size_map[trans_hash] = size - 1;
+      }
+      mtx1.unlock();
    }
 }
 
@@ -138,15 +144,15 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
    mtx.lock();
    static uint32_t cur_cluster = 1;
    uint32_t cluster_no = address_map[*addresses->begin()];
-   
+
    // address has no cluster
-   if (cluster_no == 0) { 
+   if (cluster_no == 0) {
       cluster_no = cur_cluster;
       cur_cluster++;
       address_map[*addresses->begin()] = cluster_no;
    }
-   
-   unordered_set<payment_address>* cluster = 
+
+   unordered_set<payment_address>* cluster =
       new unordered_set<payment_address>();
    cluster->insert(addresses->begin(), addresses->end());
 
@@ -157,10 +163,10 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
       // 0 is the empty cluster, so if it isn't 0 merge everything and erase old
       if (cur_no != 0) {
 	 unordered_set<payment_address> *cur_cluster = closure_map[cur_no];
-	 
+
 	 if (cur_no != cluster_no) {
 	    cluster->insert(cur_cluster->begin(), cur_cluster->end());
-	    closure_map.erase(cur_no);
+	    //closure_map.erase(cur_no);
 	 }
       }
       address_map[*addr] = cluster_no;
@@ -193,13 +199,13 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
   return 1;
   }
   parser parse(&ldb_chain);
-    
+
   // Don't wait after all current operations have completed.
   pool.shutdown();
-    
+
   // Join them one by one.
   pool.join();
-   
+
   // code to print stuff out
   for (auto addr = parse.addressesBegin();
   addr != parse.addressesEnd(); addr++) {
