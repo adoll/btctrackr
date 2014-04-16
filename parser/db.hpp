@@ -14,6 +14,7 @@
 #include <cppconn/statement.h>
 #include <cppconn/prepared_statement.h> 
 
-uint32_t db_get(sql::Connection *con, const char* address);
+uint32_t db_get(sql::Connection *con, std::string address);
 void db_insert(sql::Connection *con, std::string address, uint32_t cluster);
+void db_update(sql::Connection *con, std::string address, uint32_t cluster);
 sql::Connection *db_init_connection();

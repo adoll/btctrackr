@@ -4,12 +4,17 @@ uint32_t db_get(sql::Connection *con, std::string address) {
 
     sql::PreparedStatement *stmt;
     sql::ResultSet *res;
-    uint32_t result;
+    uint32_t result = 0;
 
     stmt = con->prepareStatement("SELECT cluster FROM test WHERE address LIKE ?");
     stmt->setString(1, address);
     
     res = stmt->executeQuery();
+
+    if (res == NULL) {
+        delete stmt;
+        return result;
+    }
 
     while (res->next()) {
         result = res->getUInt("cluster");
@@ -20,6 +25,19 @@ uint32_t db_get(sql::Connection *con, std::string address) {
 
     return result;
 
+}
+
+void db_update(sql::Connection *con, std::string address, uint32_t cluster) {
+
+    sql::PreparedStatement *stmt;
+
+    stmt = con->prepareStatement("UPDATE test SET address = ?, cluster = ? WHERE address = ?");
+    stmt->setString(1, address);
+    stmt->setUInt(2, cluster);
+    stmt->setString(3, address); 
+    stmt->execute();
+
+    delete stmt;
 }
 
 void db_insert(sql::Connection *con, std::string address, uint32_t cluster) {
@@ -51,7 +69,6 @@ sql::Connection *db_init_connection() {
     delete stmt;
     return con;
 }
-
 /*
 int main(int argc, char** argv) {
 
@@ -61,13 +78,20 @@ int main(int argc, char** argv) {
     int result;
 
     con = db_init_connection();
-    db_insert(con, addr1, 8);
-    db_insert(con, addr2, 11);
+
+    if (db_get(con, addr1) == 0)
+        db_insert(con, addr1, 5);
+    else
+        db_update(con, addr1, 19);
+
+    if (db_get(con, addr1) == 0)
+        db_insert(con, addr1, 5);
+    else
+        db_update(con, addr1, 19);
+
     result = db_get(con, addr1);
     std::cout << result << std::endl; 
-    result = db_get(con, addr2);
-    std::cout << result << std::endl; 
-    
+
     delete con; 
 }
 */

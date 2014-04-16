@@ -152,10 +152,9 @@ void fullnode::handle_reorganize(
    const blockchain::block_list& added,     // New blocks added to blockchain
    const blockchain::block_list& removed    // Blocks removed (empty if none)
    ) {
-   log_info() << "here";
+   
    for (size_t i = 0; i < added.size(); ++i)
    {
-      size_t height = fork_point + 1 + i;
       parse->update(*added[i]);
    }
    auto handle = bind(&fullnode::handle_reorganize, this, _1, _2,
@@ -215,19 +214,6 @@ void fullnode::stop()
    net_pool_.join();
    disk_pool_.join();
    mem_pool_.join();
-
-   // code to print stuff out
-   for (auto addr = parse->addressesBegin();
-	addr != parse->addressesEnd(); addr++) {
-      uint32_t cluster_no = addr->second;
-      log_info() << "Address: " << addr->first.encoded()  << " Cluster: " << cluster_no;
-      log_info() << "Rest of Cluster: \n --------------------------------------------------";
-      for (auto cluster_addr = parse->closure(addr->first)->begin();
-	   cluster_addr != parse->closure(addr->first)->end(); cluster_addr++) {
-	 log_info() << "Cluster Address: " << cluster_addr->encoded();
-      }
-      log_info() << "------------------------------------------------------------------------";
-   }
 
    // Safely close blockchain database.
    chain_.stop();

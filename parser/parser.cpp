@@ -146,7 +146,6 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
       cluster_no = cur_cluster;
       cur_cluster++;
       address_map[*addresses->begin()] = cluster_no;
-      db_insert(con, addresses->begin()->encoded(), cluster_no);
    }
    
    unordered_set<payment_address>* cluster = 
@@ -163,21 +162,19 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
 	 
 	 if (cur_no != cluster_no) {
 	    cluster->insert(cur_cluster->begin(), cur_cluster->end());
-	    closure_map.erase(cur_no);
 	 }
       }
       address_map[*addr] = cluster_no;
-      db_insert(con, addr->encoded(), cluster_no);
    }
    // make sure all addresses in the cluster have the right number
    
    for (auto addr = cluster->begin();
 	addr != cluster->end(); addr++) {
-      if (address_map[*addr] != cluster_no) {
-          address_map[*addr] = cluster_no;
-          db_insert(con, addr->encoded(), cluster_no);
-      }
- 
+        address_map[*addr] = cluster_no;
+        if (db_get(con, addr->encoded()) == 0) 
+            db_insert(con, addr->encoded(), cluster_no);
+        else
+            db_update(con, addr->encoded(), cluster_no); 
     }
    
    closure_map[cluster_no] = cluster;
