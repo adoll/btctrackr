@@ -108,7 +108,6 @@ void parser::handle_trans_fetch(
    else {
       mtx1.lock();
       uint32_t size = trans_size_map[trans_hash];
-      log_info() << size;
       payment_address addr;
       if (extract(addr, (tx.outputs.begin() + index)->script)) {
 	 unordered_set<payment_address> *addresses = common_addresses[trans_hash];
