@@ -142,15 +142,8 @@ void parser::handle_trans_fetch(
 void parser::process_transaction(unordered_set<payment_address> *addresses) {
    mtx.lock();
    static uint32_t cur_cluster = 1;
-   uint32_t cluster_no = address_map[*addresses->begin()];
-
-   // address has no cluster
-   if (cluster_no == 0) {
-      cluster_no = cur_cluster;
-      cur_cluster++;
-      address_map[*addresses->begin()] = cluster_no;
-   }
-
+   uint32_t cluster_no = 0;
+   
    unordered_set<payment_address>* cluster =
       new unordered_set<payment_address>();
    cluster->insert(addresses->begin(), addresses->end());
@@ -162,14 +155,15 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
       // 0 is the empty cluster, so if it isn't 0 merge everything and erase old
       if (cur_no != 0) {
 	 unordered_set<payment_address> *cur_cluster = closure_map[cur_no];
-
-	 if (cur_no != cluster_no) {
-	    cluster->insert(cur_cluster->begin(), cur_cluster->end());
-	    //closure_map.erase(cur_no);
+	 // update cluster no, in this way, we always allocate to smallest id
+	 if (cur_no < cluster_no || cluster_no == 0) {
+	    cluster_no = cur_no;
 	 }
+	 cluster->insert(cur_cluster->begin(), cur_cluster->end());
       }
-      address_map[*addr] = cluster_no;
    }
+   if (cluster_no == 0)
+      cluster_no = cur_cluster++;
    // make sure all addresses in the cluster have the right number
    for (auto addr = cluster->begin();
 	addr != cluster->end(); addr++) {
