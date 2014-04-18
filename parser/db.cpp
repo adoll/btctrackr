@@ -2,22 +2,23 @@
 
 uint32_t db_get(sql::Connection *con, std::string address) {
 
-    sql::PreparedStatement *stmt;
+    sql::Statement *stmt;
     sql::ResultSet *res;
     uint32_t result = 0;
-
-    stmt = con->prepareStatement("SELECT cluster FROM test WHERE address LIKE ?");
-    stmt->setString(1, address);
+    std::string query;
     
-    res = stmt->executeQuery();
+    query = "SELECT cluster FROM test WHERE address LIKE '" + address + "'";
 
-    if (res == NULL) {
-        delete stmt;
-        return result;
+    if (con == NULL) { 
+        fprintf(stderr, "NULL connection\n");    
     }
+
+    stmt = con->createStatement();
+    res = stmt->executeQuery(query);
 
     while (res->next()) {
         result = res->getUInt("cluster");
+        std::cout << result << std::endl;
     }
     
     delete res;
@@ -55,19 +56,19 @@ void db_insert(sql::Connection *con, std::string address, uint32_t cluster) {
 
 sql::Connection *db_init_connection() {
    
-    sql::mysql::MySQL_Driver *driver;
-    sql::Connection *con;
-    sql::Statement *stmt;
+        sql::mysql::MySQL_Driver *driver;
+        sql::Connection *con;
+        sql::Statement *stmt;
 
-    driver = sql::mysql::get_mysql_driver_instance();
-    con = driver->connect("localhost", "root", "");
-    stmt = con->createStatement();
-    stmt->execute("USE test");
-    stmt->execute("DROP TABLE IF EXISTS test");
-    stmt->execute("CREATE TABLE test(address VARCHAR(34), cluster INT)");
+        driver = sql::mysql::get_mysql_driver_instance();
+        con = driver->connect("localhost", "root", "");
+        stmt = con->createStatement();
+        stmt->execute("USE test");
+        stmt->execute("DROP TABLE IF EXISTS test");
+        stmt->execute("CREATE TABLE test(address VARCHAR(34), cluster INT)");
  
-    delete stmt;
-    return con;
+        delete stmt;
+        return con;
 }
 /*
 int main(int argc, char** argv) {
@@ -89,7 +90,7 @@ int main(int argc, char** argv) {
     else
         db_update(con, addr1, 19);
 
-    result = db_get(con, addr1);
+    result = db_get(con, addr2);
     std::cout << result << std::endl; 
 
     delete con; 

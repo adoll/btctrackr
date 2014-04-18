@@ -32,3 +32,8 @@ all: initchain fullnode
 clean:
 	rm -f fullnode initchain parser
 	rm -f *.o
+
+blockchain:
+	rm -rf blockchain
+	mkdir blockchain
+	./initchain blockchain

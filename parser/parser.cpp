@@ -171,15 +171,22 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
    for (auto addr = cluster->begin();
 	addr != cluster->end(); addr++) {
         address_map[*addr] = cluster_no;
+        
         if (db_get(con, addr->encoded()) == 0) 
             db_insert(con, addr->encoded(), cluster_no);
         else
             db_update(con, addr->encoded(), cluster_no); 
+            
     }
    
    closure_map[cluster_no] = cluster;
    mtx.unlock();
 }
+
+void parser::close() {
+    delete con;
+}
+
 /*int main()
   {
   // Define a threadpool with 1 thread.

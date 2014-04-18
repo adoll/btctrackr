@@ -206,6 +206,8 @@ void fullnode::stop()
    if (ec)
       log_error() << "Problem stopping session: " << ec.message();
 
+   
+   parse->close();
    // Stop threadpools.
    net_pool_.stop();
    disk_pool_.stop();

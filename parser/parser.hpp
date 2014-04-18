@@ -33,6 +33,7 @@ public:
    unordered_set<payment_address>* closure(payment_address addr);
    const unordered_map<payment_address, uint32_t>::iterator addressesBegin();
    const unordered_map<payment_address, uint32_t>::iterator addressesEnd();
+   void close();
 
 private:
    blockchain* chain = nullptr;
