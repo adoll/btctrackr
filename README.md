@@ -7,7 +7,7 @@ dependencies are handled by the libbitcoin setup.
 
 1. Have libbitcoin setup (http://libbitcoin.dyne.org/download.html)
 2. Run make in parser/
-3. mkdir blockchain
+3. Run mkdir blockchain
 4. Run ./initchain blockchain
 5. Run ./fullnode for some period of time
 6. Type stop and hit enter, you'll see a bunch of addresses and their closures

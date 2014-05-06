@@ -27,8 +27,9 @@ using namespace placeholders;
 // construct a parser, updating it to the current point in the blockchain
 parser::parser(blockchain* chainPtr) {
    chain = chainPtr;
+   con = db_init_connection();
    auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
-   chain->fetch_last_height(height_fetched_func);
+   chain->fetch_last_height(height_fetched_func); 
 }
 
 void parser::update(const block_type& blk) {
@@ -55,21 +56,6 @@ void parser::update(const block_type& blk) {
       }
    }
 }
-
-unordered_set<payment_address>* parser::closure(payment_address addr) {
-   uint32_t cluster_no = address_map[addr];
-   if (cluster_no == 0) return NULL;
-   else return closure_map[cluster_no];
-}
-
-const unordered_map<payment_address, uint32_t>::iterator parser::addressesBegin() {
-   return address_map.begin();
-}
-
-const unordered_map<payment_address, uint32_t>::iterator parser::addressesEnd() {
-   return address_map.end();
-}
-
 
 void parser::height_fetched(const std::error_code& ec, size_t last_height)
 {
@@ -143,35 +129,48 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
    mtx.lock();
    static uint32_t cur_cluster = 1;
    uint32_t cluster_no = 0;
+    
+   unordered_set<string>* cluster =
+      new unordered_set<string>();
    
-   unordered_set<payment_address>* cluster =
-      new unordered_set<payment_address>();
-   cluster->insert(addresses->begin(), addresses->end());
+   for (auto address = addresses->begin(); address != addresses->end(); address++)
+    cluster->insert(address->encoded());
 
    // merging all clusters into one cluster
    for (auto addr = addresses->begin();
 	addr != addresses->end(); addr++) {
-      uint32_t cur_no = address_map[*addr];
+      uint32_t cur_no = db_get(con, addr->encoded()); //
       // 0 is the empty cluster, so if it isn't 0 merge everything and erase old
       if (cur_no != 0) {
-	 unordered_set<payment_address> *cur_cluster = closure_map[cur_no];
-	 // update cluster no, in this way, we always allocate to smallest id
-	 if (cur_no < cluster_no || cluster_no == 0) {
-	    cluster_no = cur_no;
-	 }
-	 cluster->insert(cur_cluster->begin(), cur_cluster->end());
+	    unordered_set<string> *cur_cluster = db_getset(con, cur_no);
+	    // update cluster no, in this way, we always allocate to smallest id
+	    if (cur_no < cluster_no || cluster_no == 0) {
+	        cluster_no = cur_no;
+	    }
+	    cluster->insert(cur_cluster->begin(), cur_cluster->end());
       }
    }
    if (cluster_no == 0)
       cluster_no = cur_cluster++;
    // make sure all addresses in the cluster have the right number
+   
    for (auto addr = cluster->begin();
 	addr != cluster->end(); addr++) {
-      address_map[*addr] = cluster_no;
-   }
-   closure_map[cluster_no] = cluster;
+        
+        if (db_get(con, *addr) == 0) 
+            db_insert(con, *addr, cluster_no);
+        else
+            db_update(con, *addr, cluster_no); 
+            
+    }
+   
    mtx.unlock();
 }
+
+void parser::close() {
+    delete con;
+}
+
 /*int main()
   {
   // Define a threadpool with 1 thread.

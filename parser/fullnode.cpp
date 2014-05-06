@@ -152,6 +152,7 @@ void fullnode::handle_reorganize(
    const blockchain::block_list& added,     // New blocks added to blockchain
    const blockchain::block_list& removed    // Blocks removed (empty if none)
    ) {
+
    if (!ec) {
       for (size_t i = 0; i < added.size(); ++i)
       {
@@ -208,6 +209,7 @@ void fullnode::stop()
    if (ec)
       log_error() << "Problem stopping session: " << ec.message();
 
+   
    // Stop threadpools.
    net_pool_.stop();
    disk_pool_.stop();
@@ -217,21 +219,11 @@ void fullnode::stop()
    disk_pool_.join();
    mem_pool_.join();
 
-   // code to print stuff out
-   for (auto addr = parse->addressesBegin();
-     addr != parse->addressesEnd(); addr++) {
-     uint32_t cluster_no = addr->second;
-     log_info() << "Address: " << addr->first.encoded()  << " Cluster: " << cluster_no;
-     log_info() << "Rest of Cluster: \n --------------------------------------------------";
-     for (auto cluster_addr = parse->closure(addr->first)->begin();
-	  cluster_addr != parse->closure(addr->first)->end(); cluster_addr++) {
-	log_info() << "Cluster Address: " << cluster_addr->encoded();
-     }
-     log_info() << "------------------------------------------------------------------------";
-     }
-
    // Safely close blockchain database.
    chain_.stop();
+
+   parse->close();
+
 }
 
 blockchain& fullnode::chain()

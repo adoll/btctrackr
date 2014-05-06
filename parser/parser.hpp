@@ -20,6 +20,7 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
+#include "db.hpp"
 #include <bitcoin/bitcoin.hpp>
 #include <unordered_set>
 #include <mutex>
@@ -30,9 +31,7 @@ class parser
 public:
    parser(blockchain* chain);
    void update(const block_type& blk);
-   unordered_set<payment_address>* closure(payment_address addr);
-   const unordered_map<payment_address, uint32_t>::iterator addressesBegin();
-   const unordered_map<payment_address, uint32_t>::iterator addressesEnd();
+   void close();
 
 private:
    blockchain* chain = nullptr;
@@ -42,11 +41,6 @@ private:
    // map of transaction to payment address
    unordered_map<hash_digest, uint32_t> trans_size_map;
    unordered_map<hash_digest, unordered_set<payment_address>*> common_addresses;
-   // map of closure id to set of addresses, eventually change to closure,
-   // each closure is a list of transactions
-   unordered_map<uint32_t, unordered_set<payment_address>*> closure_map;
-   // map of addresses to closure id
-   unordered_map<payment_address, uint32_t> address_map;
 
    void process_transaction(unordered_set<payment_address> *addresses);
    void handle_trans_fetch(      
@@ -59,6 +53,8 @@ private:
       const std::error_code& ec,  // Status of operation
       const block_type& blk);       // Block header
    void height_fetched(const std::error_code& ec, size_t last_height);
+
+   sql::Connection *con;
 
 };
 
