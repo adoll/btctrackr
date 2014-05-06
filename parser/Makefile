@@ -27,13 +27,15 @@ fullnode: fullnode.o parser.o db.o
 db.o: db.cpp db.hpp
 	$(CXX) -c -I/usr/local/include -I/usr/local/include/cppconn -Wl,-Bdynamic db.cpp $(CXXFLAGS)	
 
-all: initchain fullnode 
+all: initchain fullnode
 
 clean:
 	rm -f fullnode initchain parser
 	rm -f *.o
 
-blockchain:
+restart: initchain
 	rm -rf blockchain
 	mkdir blockchain
 	./initchain blockchain
+	./droptables.sh
+
