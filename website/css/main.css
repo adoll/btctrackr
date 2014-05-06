@@ -1,0 +1,107 @@
+body {
+    -webkit-animation-delay: 0.2s;
+    -webkit-animation-name: fontfix;
+    -webkit-animation-duration: 0.2s;
+    -webkit-animation-iteration-count: 1;
+    -webkit-animation-timing-function: linear;
+}
+
+@-webkit-keyframes fontfix {
+    from { opacity: 1; }
+    to   { opacity: 1; }
+}
+
+  body { 
+    font-family: 'Lato-Regular', sans-serif;
+    background: url('../img/bitcoin.jpg') no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+  }
+
+
+.btn-special:hover, .btn-special:focus, .btn-special:active, .btn-special.active, .open .dropdown-toggle.btn-special {
+
+  background-color: rgb(255,85,34);
+  border-color: rgb(255,85,34);
+  color:white;
+ }
+
+.btn-special
+{
+  background-color: rgb(252,102,34);
+  border-color: rgb(252,102,34);
+  color:white;
+}
+
+.modal-body {
+  color: #333;
+    text-shadow: none;
+        line-height: 28px;
+    margin-bottom: 25px;
+    font-size: 16px;
+}
+
+input, textarea, button, span {
+
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: 'Lato-Hairline', Calibri, Arial, sans-serif;
+  font-weight: normal;
+
+}
+
+input#go-input{
+
+  border-radius:4px;
+  color:white;
+  font-size:25px;
+  height:67px;
+}
+
+.inner a{
+  text-decoration:none;
+}
+
+.popover-content{
+    background-color:#f0ad4e;
+    color:white;
+}
+
+@font-face {
+  font-family: 'Lato-Hairline';
+  src: local('Lato Hairline'), local('Lato-Hairline'), url(../fonts/lato/Lato-Hai.ttf) format("truetype");
+}
+@font-face {
+  font-family: 'Lato-Light';
+  src: local('Lato Light'), local('Lato-Light'), url(../fonts/lato/Lato-Lig.ttf) format("truetype");
+}
+@font-face {
+  font-family: 'Lato-Regular';
+  src: local('Lato Regular'), local('Lato-Regular'), url(../fonts/lato/Lato-Reg.ttf) format("truetype");
+}
+@font-face {
+  font-family: 'Lato-Bold';
+  src: local('Lato Bold'), local('Lato-Bold'), url(../fonts/lato/Lato-Bol.ttf) format("truetype");
+}
+
+::-webkit-input-placeholder { /* WebKit browsers */
+    color:    #ffffff;
+    opacity: 0.5;
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+    color:    #ffffff;
+    opacity: 0.5;
+
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+    color:    #ffffff;
+    opacity: 0.5;
+
+}
+:-ms-input-placeholder { /* Internet Explorer 10+ */
+    color:    #ffffff;
+    opacity: 0.5;
+}
