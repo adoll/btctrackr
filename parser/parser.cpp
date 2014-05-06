@@ -28,6 +28,9 @@ using namespace placeholders;
 parser::parser(blockchain* chainPtr) {
    chain = chainPtr;
    con = db_init_connection();
+   max_cluster = db_getmax(con);
+   if (max_cluster == 0)
+       max_cluster = 1;
    auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
    chain->fetch_last_height(height_fetched_func); 
 }
@@ -127,7 +130,7 @@ void parser::handle_trans_fetch(
 // cluster mapping
 void parser::process_transaction(unordered_set<payment_address> *addresses) {
    mtx.lock();
-   static uint32_t cur_cluster = 1;
+   uint32_t cur_cluster = max_cluster;
    uint32_t cluster_no = 0;
     
    unordered_set<string>* cluster =

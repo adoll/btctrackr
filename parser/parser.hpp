@@ -35,6 +35,7 @@ public:
 
 private:
    blockchain* chain = nullptr;
+   uint32_t max_cluster;
    // used in process_transaction
    mutex mtx;
    mutex mtx1;

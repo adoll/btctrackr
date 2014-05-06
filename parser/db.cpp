@@ -1,5 +1,27 @@
 #include "db.hpp"
-#include <sstream>
+
+uint32_t db_getmax(sql::Connection *con) {
+    
+    sql::Statement *stmt;
+    sql::ResultSet *res;
+    uint32_t result = 0;
+    std::string query;
+    
+    query = "SELECT MAX(cluster) FROM test";
+
+    stmt = con->createStatement();
+    res = stmt->executeQuery(query);
+
+    while (res->next()) {
+        result = res->getUInt("MAX(cluster)");
+    }
+    
+    delete res;
+    delete stmt;
+
+    return result;
+
+}
 
 std::unordered_set<std::string>* db_getset(sql::Connection *con, uint32_t cur_no) {
 
@@ -86,20 +108,20 @@ void db_insert(sql::Connection *con, std::string address, uint32_t cluster) {
 }
 
 sql::Connection *db_init_connection() {
-   
-        sql::mysql::MySQL_Driver *driver;
-        sql::Connection *con;
-        sql::Statement *stmt;
 
-        driver = sql::mysql::get_mysql_driver_instance();
-        con = driver->connect("localhost", "root", "");
-        stmt = con->createStatement();
-        stmt->execute("USE test");
-       // stmt->execute("DROP TABLE IF EXISTS test");
-       // stmt->execute("CREATE TABLE test(address VARCHAR(34), cluster INT)");
- 
-        delete stmt;
-        return con;
+    sql::mysql::MySQL_Driver *driver;
+    sql::Connection *con;
+    sql::Statement *stmt;
+
+    driver = sql::mysql::get_mysql_driver_instance();
+    con = driver->connect("localhost", "root", "");
+    stmt = con->createStatement();
+    stmt->execute("USE test");
+    //stmt->execute("DROP TABLE IF EXISTS test");
+    //stmt->execute("CREATE TABLE test(address VARCHAR(34), cluster INT)");
+
+    delete stmt;
+    return con;
 }
 /*
 int main(int argc, char** argv) {
@@ -107,17 +129,15 @@ int main(int argc, char** argv) {
     sql::Connection *con;
     const char* addr1 = "1BGbGFBhsXYq6kTyjSC9AHRe1dhe76tD6i"; 
     const char* addr2 = "12sW3NCCG3v1hTeSHsDiPtDJxjwHmGn5nt";
-    std::unordered_set<std::string>* set;
+    uint32_t max;
 
     con = db_init_connection();
 
-    db_insert(con, addr1, 5);
-    db_insert(con, addr2, 5);
+    //    db_insert(con, addr1, 5);
+    //    db_insert(con, addr2, 7);
 
-    set = db_getset(con, 5);
-
-    for (auto result = set->begin(); result != set->end(); result++)
-        std::cout << *result << std::endl;
+    max = db_getmax(con);
+    std::cout << max << std::endl;
 
     delete con; 
 }
