@@ -116,9 +116,10 @@ sql::Connection *db_init_connection() {
     driver = sql::mysql::get_mysql_driver_instance();
     con = driver->connect("localhost", "root", "");
     stmt = con->createStatement();
+
+    stmt->execute("CREATE DATABASE IF NOT EXISTS test");
     stmt->execute("USE test");
-    //stmt->execute("DROP TABLE IF EXISTS test");
-    //stmt->execute("CREATE TABLE test(address VARCHAR(34), cluster INT)");
+    stmt->execute("CREATE TABLE IF NOT EXISTS test(address VARCHAR(34), cluster INT)");
 
     delete stmt;
     return con;
@@ -133,8 +134,8 @@ int main(int argc, char** argv) {
 
     con = db_init_connection();
 
-    //    db_insert(con, addr1, 5);
-    //    db_insert(con, addr2, 7);
+    db_insert(con, addr1, 5); 
+    db_insert(con, addr2, 7);
 
     max = db_getmax(con);
     std::cout << max << std::endl;
