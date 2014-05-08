@@ -162,6 +162,8 @@
 
               for (var i = 0; i < cluster_addresses.length; i++) 
               {
+                if(cluster_addresses[i] == address)
+                  continue;
                 $('#cluster_addresses').append("<span>" + cluster_addresses[i] + "</span><br />");
               }
 
