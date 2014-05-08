@@ -30,8 +30,8 @@ parser::parser(blockchain* chainPtr) {
    con = db_init_connection();
    cur_cluster = db_getmax(con);
    cur_cluster++;
-   //auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
-   //chain->fetch_last_height(height_fetched_func); 
+   auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
+   chain->fetch_last_height(height_fetched_func); 
 }
 
 void parser::update(const block_type& blk) {
@@ -203,9 +203,13 @@ void parser::history_fetched2(const std::error_code& ec,
    }
    //log_info() << "Balance: " << balance;
    mtx.lock();
+   if (addr == "12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S")
+      cerr << "Balance: " << balance;
    if (db_get(con, addr) == 0)
       db_insert(con, addr, cur_cluster++, balance);
    else db_update(con, addr, balance);
+   if (addr == "12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S") 
+      log_info() << "Balance: " << balance;
    mtx.unlock();
    
 }
@@ -230,9 +234,11 @@ void parser::history_fetched(const std::error_code& ec,
       if (row.spend.hash == null_hash)
 	 balance += value;
    }
-   //log_info() << "Balance: " << balance;
+   if (addr.encoded() == "12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S")
+      cerr << "Balance: " << balance;
    mtx.lock();
    if (db_get(con, addr.encoded()) == 0) db_insert(con, addr.encoded(),  cur_cluster++, balance);
+   else db_update(con, addr.encoded(), balance);
    mtx.unlock();
    /*else {
       db_update(con, addr.encoded(), balance);

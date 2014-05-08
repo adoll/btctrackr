@@ -158,7 +158,7 @@ void fullnode::handle_reorganize(
       for (size_t i = 0; i < added.size(); ++i)
       {
 	 
-	 parse->update(*added[i]);
+	 //parse->update(*added[i]);
       }
    }
    else {
@@ -166,7 +166,7 @@ void fullnode::handle_reorganize(
    }
    auto handle = bind(&fullnode::handle_reorganize, this, _1, _2,
 		      _3, _4);
-   chain_.subscribe_reorganize(handle);
+   //chain_.subscribe_reorganize(handle);
 }
 void fullnode::start()
 {
