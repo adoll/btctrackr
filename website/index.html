@@ -95,23 +95,30 @@
 
     var ROOTPATH = "http://www.btctrackr.com/";
 
-    $(document).ready(function(){
+    $(document).ready(function()
+    {
       $('#main').css("display", "none");
       $('#main').fadeIn(1000);
       $('#contactclick').popover({placement:'top'});
     });
 
-    $('#trackclick').click(function() {
+    $('#trackclick').click(function() 
+    {
       $('#pathdiv').css("display", "none");
       $('#trackdiv').fadeIn(1000);
+
+      // clear the clusterdiv, and the cluster_addresses
     });
 
-    $('#pathclick').click(function() {
+    $('#pathclick').click(function() 
+    {
       $('#trackdiv').css("display", "none");
       $('#pathdiv').fadeIn(1000);
     });
 
-    $('#go-button').click(function() {
+    $('#go-button').click(function() 
+    {
+      $('#trackdiv').fadeOut(1000);
       var address = $('#go-input').val();
 
       var url_string =  ROOTPATH + 'btctrackr_ajax.php';
@@ -139,10 +146,21 @@
               var cluster_id = response_data.cluster_id;
               var cluster_addresses = response_data.cluster_addresses;
               var cluster_btc = response_data.btc;
+              var cluster_numaddrs = cluster_addresses.length;
 
-              alert("Address " + address + " is associated with cluster " + cluster_id);
+              // Change the values of the dynamic variables
+              $('#cluster_numaddrs').html(String(cluster_numaddrs));
+              $('#cluster_btc').html(String(cluster_btc));
+              $('#cluster_address').html(String(address));
 
-              //$('#cluster_addresses').append("<span>" + 1dice48cexAaxtGiTRJTNUT1mBqqunzM1 + "</span><br />");
+              for (var i = 0; i < cluster_addresses; i++) 
+              {
+                $('#cluster_addresses').append("<span>" + cluster_addresses[i] + "</span><br />");
+              }
+
+              //  alert("Address " + address + " is associated with cluster " + cluster_id);
+            
+              $('#clusterdiv').fadeIn(1000);
             }
           }
           catch(error)
