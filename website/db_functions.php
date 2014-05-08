@@ -5,6 +5,7 @@ define("DB_PASSWORD", "");
 define("DB_HOSTNAME", "localhost");
 define("DB_NAME", "test");
 
+echo "hello";
 $mysqli = db_connect();
 $result = $mysqli->query("SELECT * FROM test");
 var_dump($result); 
