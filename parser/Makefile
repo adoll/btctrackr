@@ -18,6 +18,12 @@ priv: priv.o
 parser.o: parser.cpp
 	$(CXX) -o $@ -c -I/usr/local/include/cppconn -Wl,-Bdynamic $< $(CXXFLAGS)
 
+updater.o: updater.cpp
+	$(CXX) -o $@ -c -I/usr/local/include/cppconn -Wl,-Bdynamic $< $(CXXFLAGS)
+
+updater: updater.o
+	$(CXX) -o $@ $< parser.o db.o $(LIBS) -lmysqlcppconn
+
 fullnode.o: fullnode.cpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS)
 
@@ -27,7 +33,7 @@ fullnode: fullnode.o parser.o db.o
 db.o: db.cpp db.hpp
 	$(CXX) -c -I/usr/local/include -I/usr/local/include/cppconn -Wl,-Bdynamic db.cpp $(CXXFLAGS)	
 
-all: initchain fullnode
+all: initchain fullnode updater
 
 clean:
 	rm -f fullnode initchain parser

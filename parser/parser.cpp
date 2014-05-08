@@ -30,8 +30,8 @@ parser::parser(blockchain* chainPtr) {
    con = db_init_connection();
    cur_cluster = db_getmax(con);
    cur_cluster++;
-   //auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
-   //chain->fetch_last_height(height_fetched_func); 
+   auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
+   chain->fetch_last_height(height_fetched_func); 
 }
 
 void parser::update(const block_type& blk) {
