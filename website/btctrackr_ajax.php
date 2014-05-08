@@ -16,8 +16,10 @@ if((strcmp($_POST['function_name'], 'get_cluster_from_address')==0) && isset($_P
 	{
 	    return_ajax_success("success", $row["cluster"]);
 	}
-
-	return_ajax_error();
+	else
+	{
+		return_ajax_error();
+	}
 }
 // return error
 else 
