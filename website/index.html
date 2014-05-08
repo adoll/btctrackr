@@ -142,7 +142,8 @@
           {
             response = jQuery.parseJSON(result);
             if(response.status === "error")
-            {
+            {               
+              $('#trackdiv').fadeIn(1000);
               alert(response.message);
             }
             else if(response.status == "success")
@@ -171,6 +172,7 @@
           }
           catch(error)
           {
+            $('#trackdiv').fadeIn(1000);
             alert("Trouble connecting to server!");
           }
         }
