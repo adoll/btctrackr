@@ -30,17 +30,23 @@ fullnode.o: fullnode.cpp
 fullnode: fullnode.o parser.o db.o
 	$(CXX) -o $@ $< parser.o db.o $(LIBS) -lmysqlcppconn
 
+downloader.o: downloader.cpp
+	$(CXX) -o $@ -c $< $(CXXFLAGS)
+
+downloader: downloader.o
+	$(CXX) -o $@ $< $(LIBS)
+
+
 db.o: db.cpp db.hpp
 	$(CXX) -c -I/usr/local/include -I/usr/local/include/cppconn -Wl,-Bdynamic db.cpp $(CXXFLAGS)	
 
-all: initchain fullnode updater
+all: initchain fullnode updater downloader
 
 clean:
 	rm -f fullnode initchain parser
 	rm -f *.o
 
 restart: initchain
-	rm -rf blockchain
 	mkdir blockchain
 	./initchain blockchain
 	./droptables.sh
