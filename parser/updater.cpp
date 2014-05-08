@@ -43,7 +43,7 @@ int main()
   log_error() << "Problem starting blockchain: " << ec.message();
   return 1;
   }
-  parser parse(&ldb_chain);
+  parser parse(&ldb_chain, true);
 
   // Don't wait after all current operations have completed.
   pool.shutdown();

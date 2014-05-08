@@ -29,7 +29,7 @@ using namespace std;
 class parser
 {
 public:
-   parser(blockchain* chain);
+   parser(blockchain* chain, bool update);
    void update(const block_type& blk);
    void close();
 

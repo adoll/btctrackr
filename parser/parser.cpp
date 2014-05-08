@@ -25,13 +25,15 @@
 using namespace placeholders;
 
 // construct a parser, updating it to the current point in the blockchain
-parser::parser(blockchain* chainPtr) {
+parser::parser(blockchain* chainPtr, bool update) {
    chain = chainPtr;
    con = db_init_connection();
    cur_cluster = db_getmax(con);
    cur_cluster++;
-   auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
-   chain->fetch_last_height(height_fetched_func); 
+   if (update) {
+      auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
+      chain->fetch_last_height(height_fetched_func); 
+   }
 }
 
 void parser::update(const block_type& blk) {

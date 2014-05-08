@@ -186,7 +186,7 @@ void fullnode::start()
       log_error() << "Problem starting blockchain: " << ec.message();
       return;
    }
-   parse = new parser(&chain_);
+   parse = new parser(&chain_, false);
    auto handle = bind(&fullnode::handle_reorganize, this, _1, _2,
 		      _3, _4);
    chain_.subscribe_reorganize(handle);
