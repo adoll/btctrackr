@@ -65,13 +65,6 @@
               <span style="font-size:18px;"> The address <span id="cluster_address" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span> likely belongs<br /> to an entity controlling <span id="cluster_numaddrs">30</span> other addresses and <span id="cluster_btc">0.0</span> ฿. </span>
               <br /><br />
               <div id="cluster_addresses">
-                <span>1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span><br />
-                <span>17Dt7kxNnVorHuY9p1fU7sB9bfq7jXsAha</span><br />
-                <span>132fBzTVYy8vhrMAFPF7iRy3nDjVzins75</span><br />
-                <span>12sgE7XZpgAwGvw7XJrQRZQfoYhdwzNSR5</span><br />
-                <span>1MASBtpDJDPM6nnj7to6WmU6CyrQwyiGvM</span><br />
-                <span>1KQwdiW4bQ6hrNF7TFh7JzP4jsKeBvGW2T</span><br />
-                <span>1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span><br />
               </div>
 
             </div>
@@ -142,8 +135,14 @@
             else if(response.status == "success")
             {
               var response_data = response.response_data;
-              console.log(response_data);
-              alert("Address " + address + " is associated with cluster " + cluster);
+              var address = response_data.address;
+              var cluster_id = response_data.cluster_id;
+              var cluster_addresses = response_data.cluster_addresses;
+              var cluster_btc = response_data.btc;
+
+              alert("Address " + address + " is associated with cluster " + cluster_id);
+
+              //$('#cluster_addresses').append("<span>" + 1dice48cexAaxtGiTRJTNUT1mBqqunzM1 + "</span><br />");
             }
           }
           catch(error)
