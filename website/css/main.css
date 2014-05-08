@@ -13,7 +13,7 @@ body {
 
   body { 
     font-family: 'Lato-Regular', sans-serif;
-    background: url('../img/bitcoin.jpg') no-repeat center center fixed; 
+    background: url('../img/bitcoin.jpg') center center fixed; 
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
@@ -68,6 +68,17 @@ input#go-input{
 .popover-content{
     background-color:#f0ad4e;
     color:white;
+}
+
+div#cluster_addresses{
+  width: 500px;
+  background: rgba(225, 225, 225, .3);
+  margin-left: 100px;
+  margin-right:100px;
+  font-size:18px; 
+  color:#f0ad4e;
+  max-height:555px;
+  overflow:scroll;
 }
 
 @font-face {
