@@ -148,15 +148,12 @@
               var cluster_btc = response_data.cluster_btc;
               var cluster_numaddrs = cluster_addresses.length;
 
-              console.log(response_data);
-              console.log(cluster_addresses);
-
               // Change the values of the dynamic variables
               $('#cluster_numaddrs').html(String(cluster_numaddrs));
               $('#cluster_btc').html(String(cluster_btc));
               $('#cluster_address').html(String(address));
 
-              for (var i = 0; i < cluster_addresses; i++) 
+              for (var i = 0; i < cluster_addresses.length; i++) 
               {
                 $('#cluster_addresses').append("<span>" + cluster_addresses[i] + "</span><br />");
               }
