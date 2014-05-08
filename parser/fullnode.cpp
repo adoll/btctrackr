@@ -24,6 +24,7 @@
 #include <future>
 #include "parser.hpp"
 #include <bitcoin/bitcoin.hpp>
+#include <mutex>
 using namespace bc;
 
 using std::placeholders::_1;
@@ -121,7 +122,7 @@ private:
    leveldb_blockchain chain_;
    poller poller_;
    transaction_pool txpool_;
-   //transaction_indexer txidx_;
+   transaction_indexer txidx_;
    // Mac OSX needs the bc:: namespace qualifier to compile.
    // Other systems should be OK.
    bc::session session_;
@@ -138,7 +139,7 @@ fullnode::fullnode()
      // Blockchain database service.
      chain_(disk_pool_),
      // Poll new blocks, and transaction memory pool.
-     poller_(mem_pool_, chain_), txpool_(mem_pool_, chain_), //txidx_(mem_pool_),
+     poller_(mem_pool_, chain_), txpool_(mem_pool_, chain_), txidx_(mem_pool_),
      // Session manager service. Convenience wrapper.
      session_(net_pool_, {
 	   handshake_, protocol_, chain_, poller_, txpool_})
@@ -156,6 +157,7 @@ void fullnode::handle_reorganize(
    if (!ec) {
       for (size_t i = 0; i < added.size(); ++i)
       {
+	 
 	 parse->update(*added[i]);
       }
    }
@@ -247,6 +249,72 @@ void fullnode::connection_started(const std::error_code& ec, channel_ptr node)
    protocol_.subscribe_channel(
       std::bind(&fullnode::connection_started, this, _1, _2));
 }
+
+void fullnode::recv_tx(const std::error_code& ec,
+    const transaction_type& tx, channel_ptr node)
+{
+    if (ec)
+    {
+        log_error() << "Receive transaction: " << ec.message();
+        return;
+    }
+    auto handle_deindex = [](const std::error_code& ec)
+        {
+            if (ec)
+                log_error() << "Deindex error: " << ec.message();
+        };
+    // Called when the transaction becomes confirmed in a block.
+    auto handle_confirm = [this, tx, handle_deindex](
+        const std::error_code& ec)
+        {
+            log_debug() << "handle_confirm ec = " << ec.message()
+                << " " << hash_transaction(tx);
+            if (ec)
+                log_error() << "Confirm error ("
+                    << hash_transaction(tx) << "): " << ec.message();
+            txidx_.deindex(tx, handle_deindex);
+        };
+    // Validate the transaction from the network.
+    // Attempt to store in the transaction pool and check the result.
+    txpool_.store(tx, handle_confirm,
+        std::bind(&fullnode::new_unconfirm_valid_tx, this, _1, _2, tx));
+    // Resubscribe to transaction messages from this node.
+    node->subscribe_transaction(
+        std::bind(&fullnode::recv_tx, this, _1, _2, node));
+}
+
+void fullnode::new_unconfirm_valid_tx(
+    const std::error_code& ec, const index_list& unconfirmed,
+    const transaction_type& tx)
+{
+    auto handle_index = [](const std::error_code& ec)
+        {
+            if (ec)
+                log_error() << "Index error: " << ec.message();
+        };
+    const hash_digest& tx_hash = hash_transaction(tx);
+    if (ec)
+    {
+        log_warning()
+            << "Error storing memory pool transaction "
+            << tx_hash << ": " << ec.message();
+    }
+    else
+    {
+        auto l = log_debug();
+        l << "Accepted transaction ";
+        if (!unconfirmed.empty())
+        {
+            l << "(Unconfirmed inputs";
+            for (auto idx: unconfirmed)
+                l << " " << idx;
+            l << ") ";
+        }
+        l << tx_hash;
+        txidx_.index(tx, handle_index);
+    }
+}
+
 
 int main()
 {
