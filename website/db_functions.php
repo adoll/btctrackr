@@ -5,17 +5,21 @@ define("DB_PASSWORD", "");
 define("DB_HOSTNAME", "localhost");
 define("DB_NAME", "test");
 
-db_connect();
+$mysqli = db_connect();
+$result = $mysqli->query("SELECT * FROM test");
+var_dump($result); 
 
 function db_connect()
 {
 	$mysqli = new mysqli(DB_HOSTNAME, DB_USERNAME, DB_PASSWORD, DB_NAME);
 	if ($mysqli->connect_errno) 
 	{
-    	echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
-	}
+    	//echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+		return FALSE;
+	}	
 	
-	echo $mysqli->host_info . "\n";
+	return $mysqli;	
 }
+
 
 ?>
