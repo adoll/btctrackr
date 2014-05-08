@@ -108,6 +108,11 @@
       $('#trackdiv').fadeIn(1000);
 
       // clear the clusterdiv, and the cluster_addresses
+      $('#clusterdiv').fadeOut(5);
+      $('#cluster_numaddrs').html('');
+      $('#cluster_btc').html('');
+      $('#cluster_address').html('');
+      $('#cluster_addresses').html('');
     });
 
     $('#pathclick').click(function() 
@@ -118,7 +123,7 @@
 
     $('#go-button').click(function() 
     {
-      $('#trackdiv').fadeOut(1000);
+      $('#trackdiv').fadeOut(5);
       var address = $('#go-input').val();
 
       var url_string =  ROOTPATH + 'btctrackr_ajax.php';
