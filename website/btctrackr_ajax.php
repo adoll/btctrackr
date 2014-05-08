@@ -7,6 +7,8 @@ define("MAIN_TABLE_NAME", "test");
 // This is an AJAX handler for various btctrackr core functions
 if((strcmp($_POST['function_name'], 'get_cluster_from_address')==0) && isset($_POST["address"]))
 {
+	$return_array = array();
+
 	$mysqli = db_connect();
 	$address = $mysqli->real_escape_string($_POST["address"]);
 	$query = "SELECT cluster FROM " . MAIN_TABLE_NAME . " WHERE address = '$address'";
@@ -14,7 +16,22 @@ if((strcmp($_POST['function_name'], 'get_cluster_from_address')==0) && isset($_P
 
 	if($row = $result->fetch_assoc())
 	{
-	    return_ajax_success("success", $row["cluster"]);
+		$cluster_id = $row["cluster"];
+		$query2 = "SELECT address FROM " . MAIN_TABLE_NAME . " WHERE cluster = $cluster_id";
+		$result2 = $mysqli->query($query2);
+
+		$cluster_addresses = array();
+		while($row = $result->fetch_assoc())
+		{
+			$cluster_addresses[] = $row["address"];
+		}
+
+		$return_array["address"] = $address;
+		$return_array["cluster_id"] = $row["cluster"];
+		$return_array["cluster_addresses"] = $cluster_addresses;
+		$return_array["cluster_btc"] = "0.0";
+
+	    return_ajax_success("success", $return_array);
 	}
 	else
 	{
