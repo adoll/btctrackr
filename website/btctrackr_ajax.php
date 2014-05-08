@@ -21,13 +21,13 @@ if((strcmp($_POST['function_name'], 'get_cluster_from_address')==0) && isset($_P
 		$result2 = $mysqli->query($query2);
 
 		$cluster_addresses = array();
-		while($row = $result->fetch_assoc())
+		while($row = $result2->fetch_assoc())
 		{
 			$cluster_addresses[] = $row["address"];
 		}
 
 		$return_array["address"] = $address;
-		$return_array["cluster_id"] = $row["cluster"];
+		$return_array["cluster_id"] = $cluster_id;
 		$return_array["cluster_addresses"] = $cluster_addresses;
 		$return_array["cluster_btc"] = "0.0";
 
