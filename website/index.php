@@ -1,7 +1,3 @@
-<?php
-
-?>
-
 <!DOCTYPE html>
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
@@ -60,16 +56,8 @@
               <button type="button" id="go-button" style="margin-top: 0px; height: 67px; width: 200px; vertical-align: bottom; font-size: 30px; font-weight: lighter; font-family: Lato-Hairline;" class="btn btn-large btn-warning">Shortest Path</button>
             </div>
 
-            <div id="clusterdiv" style="display:none">
-              <img src="./img/logo_text_orange.png"><br />
-              <span style="font-size:18px;"> The address <span id="cluster_address" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span> likely belongs<br /> to an entity controlling <span id="cluster_numaddrs">30</span> other addresses and <span id="cluster_btc">0.0</span> ฿. </span>
-              <br /><br />
-              <div id="cluster_addresses">
-              </div>
-
-            </div>
             <div class="mastfoot">
-              <div class="inner" style="padding-top:10px">
+              <div class="inner">
                 <a id="trackclick" href="#">Track</a> &middot;
                 <a id="pathclick" href="#">Shortest Path</a> &middot;
                 <!--<a id="contactclick" href="#">Contact</a>-->
@@ -93,92 +81,20 @@
 
     <script>
 
-    var ROOTPATH = "http://www.btctrackr.com/";
-
-    $(document).ready(function()
-    {
+    $(document).ready(function(){
       $('#main').css("display", "none");
       $('#main').fadeIn(1000);
       $('#contactclick').popover({placement:'top'});
     });
 
-    $('#trackclick').click(function() 
-    {
+    $('#trackclick').click(function() {
       $('#pathdiv').css("display", "none");
-      $('#clusterdiv').css("display", "none");
-
-      // clear the clusterdiv, and the cluster_addresses
-      $('#cluster_numaddrs').html('');
-      $('#cluster_btc').html('');
-      $('#cluster_address').html('');
-      $('#cluster_addresses').html('');
-
       $('#trackdiv').fadeIn(1000);
     });
 
-    $('#pathclick').click(function() 
-    {
+    $('#pathclick').click(function() {
       $('#trackdiv').css("display", "none");
       $('#pathdiv').fadeIn(1000);
-    });
-
-    $('#go-button').click(function() 
-    {
-      $('#trackdiv').fadeOut(5);
-      var address = $('#go-input').val();
-
-      var url_string =  ROOTPATH + 'btctrackr_ajax.php';
-      $.ajax({
-        url: url_string,  //Server script to process data
-        type: 'POST',
-        data: { 
-          'address': address,
-          'function_name': 'get_cluster_from_address'
-        },
-        //Ajax events
-        success: function(result)
-        {
-          try
-          {
-            response = jQuery.parseJSON(result);
-            if(response.status === "error")
-            {               
-              $('#trackdiv').fadeIn(1000);
-              alert(response.message);
-            }
-            else if(response.status == "success")
-            {
-              var response_data = response.response_data;
-              var address = response_data.address;
-              var cluster_id = response_data.cluster_id;
-              var cluster_addresses = response_data.cluster_addresses;
-              var cluster_btc = response_data.cluster_btc;
-              var cluster_numaddrs = cluster_addresses.length;
-
-              // Change the values of the dynamic variables
-              $('#cluster_numaddrs').html(String(cluster_numaddrs - 1));
-              $('#cluster_btc').html(String(cluster_btc));
-              $('#cluster_address').html(String(address));
-
-              for (var i = 0; i < cluster_addresses.length; i++) 
-              {
-                if(cluster_addresses[i] == address)
-                  continue;
-                $('#cluster_addresses').append("<span>" + cluster_addresses[i] + "</span><br />");
-              }
-
-              //  alert("Address " + address + " is associated with cluster " + cluster_id);
-            
-              $('#clusterdiv').fadeIn(1000);
-            }
-          }
-          catch(error)
-          {
-            $('#trackdiv').fadeIn(1000);
-            alert("Trouble connecting to server!");
-          }
-        }
-      });
     });
 
     </script>
