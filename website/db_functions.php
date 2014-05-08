@@ -5,13 +5,6 @@ define("DB_PASSWORD", "");
 define("DB_HOSTNAME", "localhost");
 define("DB_NAME", "test");
 
-$mysqli = db_connect();
-$result = $mysqli->query("SELECT * FROM test");
-
-while($row = $result->fetch_assoc())
-{
-    echo $row['address'] . '|' . $row['cluster'] . "<br />";
-}
 
 function db_connect()
 {
