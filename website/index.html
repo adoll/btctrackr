@@ -85,6 +85,8 @@
 
     <script>
 
+    var ROOTPATH = "http://www.btctrackr.com/";
+
     $(document).ready(function(){
       $('#main').css("display", "none");
       $('#main').fadeIn(1000);
@@ -103,7 +105,37 @@
 
     $('#go-button').click(function() {
       var address = $('#go-input').val();
-      alert(address);
+
+      var url_string =  ROOTPATH + 'btctrackr_ajax.php';
+      $.ajax({
+        url: url_string,  //Server script to process data
+        type: 'POST',
+        data: { 
+          'address': address,
+          'function_name': 'get_cluster_from_address'
+        },
+        //Ajax events
+        success: function(result)
+        {
+          try
+          {
+            response = jQuery.parseJSON(result);
+            if(response.status === "error")
+            {
+              alert(response.message);
+            }
+            else if(response.status == "success")
+            {
+              var cluster = response.response_data;
+              alert("Address " + address + " is associated with cluster " + cluster);
+            }
+          }
+          catch(error)
+          {
+            alert("Trouble connecting to server!");
+          }
+        }
+      });
     });
 
     </script>
