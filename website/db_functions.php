@@ -4,7 +4,6 @@ define("DB_USERNAME", "ubuntu");
 define("DB_PASSWORD", "");
 define("DB_HOSTNAME", "localhost");
 define("DB_NAME", "test");
-define("MAIN_TABLE_NAME", "test");
 
 
 function db_connect()
