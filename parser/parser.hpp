@@ -39,6 +39,7 @@ private:
    // used in process_transaction
    mutex mtx;
    mutex mtx1;
+   mutex mtx2;
    // map of transaction to payment address
    unordered_map<hash_digest, uint32_t> trans_size_map;
    unordered_map<hash_digest, unordered_set<payment_address>*> common_addresses;
@@ -54,6 +55,14 @@ private:
       const std::error_code& ec,  // Status of operation
       const block_type& blk);       // Block header
    void height_fetched(const std::error_code& ec, size_t last_height);
+   
+   void history_fetched(const std::error_code& ec,
+			const blockchain::history_list& history,
+			const payment_address addr);
+   void history_fetched2(const std::error_code& ec,
+			const blockchain::history_list& history,
+			const string addr);
+
 
    sql::Connection *con;
 

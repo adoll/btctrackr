@@ -41,7 +41,7 @@ void parser::update(const block_type& blk) {
    for (auto trans = blk.transactions.begin(); trans != blk.transactions.end();
 	trans++) {
       // for every input, get the previous transaction hash
-      if (!is_coinbase(*trans) && trans->inputs.size() > 1) {
+      if (!is_coinbase(*trans)) {
 	 hash_digest trans_hash = hash_transaction(*trans);
 	 trans_size_map[trans_hash] = trans->inputs.size();
 	 // log_info() << "size" << inputs_size;
@@ -58,6 +58,16 @@ void parser::update(const block_type& blk) {
 				     handle_trans);
 	 }
       }
+      // update balance, this will do extra work but it should be ok
+      else {
+	 payment_address address;
+	 if (extract(address, trans->outputs.begin()->script)) {
+	    auto handle_history = bind(&parser::history_fetched,
+				       this, _1, _2, address);
+	    chain->fetch_history(address, handle_history);
+	 }
+      }
+      
    }
 }
 
@@ -101,6 +111,10 @@ void parser::handle_trans_fetch(
       payment_address addr;
       if (extract(addr, (tx.outputs.begin() + index)->script)) {
 	 unordered_set<payment_address> *addresses = common_addresses[trans_hash];
+	 auto handle_history = bind(&parser::history_fetched2,
+				    this, _1, _2, addr.encoded());
+	 chain->fetch_history(addr, handle_history);
+
 	 if (addresses == NULL) {
 	    addresses = new unordered_set<payment_address>();
 	    common_addresses[trans_hash] = addresses;
@@ -161,14 +175,72 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
 	addr != cluster->end(); addr++) {
         
         if (db_get(con, *addr) == 0) 
-            db_insert(con, *addr, cluster_no);
+	   db_insert(con, *addr, cluster_no, 0);
         else
-            db_update(con, *addr, cluster_no); 
-            
+            db_update(con, *addr, cluster_no);
     }
    
    mtx.unlock();
 }
+
+
+void parser::history_fetched2(const std::error_code& ec,
+		     const blockchain::history_list& history,
+                     const string addr)
+{
+   if (ec)
+   {
+      log_error() << "Failed to fetch history: " << ec.message();
+      return;
+   }
+
+   uint64_t total_recv = 0, balance = 0;
+   for (const auto& row: history)
+   {
+      uint64_t value = row.value;
+      BITCOIN_ASSERT(value >= 0);
+      total_recv += value;
+      if (row.spend.hash == null_hash)
+	 balance += value;
+   }
+   //log_info() << "Balance: " << balance;
+   mtx.lock();
+   if (db_get(con, addr) == 0)
+      db_insert(con, addr, cur_cluster++, balance);
+   else db_update(con, addr, balance);
+   mtx.unlock();
+   
+}
+
+
+void parser::history_fetched(const std::error_code& ec,
+		     const blockchain::history_list& history,
+                     const payment_address addr)
+{
+   if (ec)
+   {
+      log_error() << "Failed to fetch history: " << ec.message();
+      return;
+   }
+
+   uint64_t total_recv = 0, balance = 0;
+   for (const auto& row: history)
+   {
+      uint64_t value = row.value;
+      BITCOIN_ASSERT(value >= 0);
+      total_recv += value;
+      if (row.spend.hash == null_hash)
+	 balance += value;
+   }
+   //log_info() << "Balance: " << balance;
+   mtx.lock();
+   if (db_get(con, addr.encoded()) == 0) db_insert(con, addr.encoded(),  cur_cluster++, balance);
+   mtx.unlock();
+   /*else {
+      db_update(con, addr.encoded(), balance);
+      } */
+}
+
 
 void parser::close() {
     delete con;

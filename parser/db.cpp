@@ -32,7 +32,7 @@ std::unordered_set<std::string>* db_getset(sql::Connection *con, uint32_t cur_no
     std::string query;
     std::string result;
     
-    q << "SELECT * FROM test WHERE cluster='" << cur_no << "'";
+    q << "SELECT address FROM test WHERE cluster='" << cur_no << "'";
     query = q.str();
 
     if (con == NULL) { 
@@ -94,14 +94,43 @@ void db_update(sql::Connection *con, std::string address, uint32_t cluster) {
     delete stmt;
 }
 
+void db_update(sql::Connection *con, std::string address, uint64_t balance) {
+
+    sql::PreparedStatement *stmt;
+
+    stmt = con->prepareStatement("UPDATE test SET balance = ? WHERE address = ?");
+    stmt->setUInt64(1, balance);
+    stmt->setString(2, address);
+    stmt->execute();
+
+    delete stmt;
+}
+
 void db_insert(sql::Connection *con, std::string address, uint32_t cluster) {
 
     sql::PreparedStatement *stmt;
 
-    stmt = con->prepareStatement("INSERT INTO test(address, cluster) VALUES (?, ?)");
+    stmt = con->prepareStatement(
+       "INSERT INTO test(address, cluster, balance) VALUES (?, ?, ?)");
     stmt->setString(1, address);
     stmt->setUInt(2, cluster);
     
+    
+    stmt->execute();
+
+    delete stmt;
+}
+
+void db_insert(sql::Connection *con, std::string address, uint32_t cluster, 
+	       uint64_t balance) {
+
+    sql::PreparedStatement *stmt;
+
+    stmt = con->prepareStatement(
+       "INSERT INTO test(address, cluster, balance) VALUES (?, ?, ?)");
+    stmt->setString(1, address);
+    stmt->setUInt(2, cluster);
+    stmt->setUInt64(3, balance);
     stmt->execute();
 
     delete stmt;
@@ -119,8 +148,7 @@ sql::Connection *db_init_connection() {
 
     stmt->execute("CREATE DATABASE IF NOT EXISTS test");
     stmt->execute("USE test");
-    stmt->execute("CREATE TABLE IF NOT EXISTS test(address VARCHAR(34), cluster INT)");
-
+    stmt->execute("CREATE TABLE IF NOT EXISTS test(address VARCHAR(34), cluster INT, balance BIGINT)");
     delete stmt;
     return con;
 }
