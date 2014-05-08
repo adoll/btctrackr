@@ -9,7 +9,7 @@ if((strcmp($_POST['function_name'], 'get_cluster_from_address')==0) && isset($_P
 {
 	$mysqli = db_connect();
 	$address = $mysqli->real_escape_string($_POST["address"]);
-	$query = "SELECT cluster FROM " . MAIN_TABLE_NAME . " WHERE address = $address";
+	$query = "SELECT cluster FROM " . MAIN_TABLE_NAME . " WHERE address = '$address'";
 	return_ajax_success("succes", $query);
 	$result = $mysqli->query($query);
 
