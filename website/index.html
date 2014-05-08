@@ -105,7 +105,6 @@
     $('#trackclick').click(function() 
     {
       $('#pathdiv').css("display", "none");
-      $('#trackdiv').fadeIn(1000);
 
       // clear the clusterdiv, and the cluster_addresses
       $('#clusterdiv').fadeOut(5);
@@ -113,6 +112,8 @@
       $('#cluster_btc').html('');
       $('#cluster_address').html('');
       $('#cluster_addresses').html('');
+
+      $('#trackdiv').fadeIn(1000);
     });
 
     $('#pathclick').click(function() 
