@@ -114,7 +114,7 @@ sql::Connection *db_init_connection() {
     sql::Statement *stmt;
 
     driver = sql::mysql::get_mysql_driver_instance();
-    con = driver->connect("localhost", "ubuntu", "");
+    con = driver->connect("localhost", "root", "privacy");
     stmt = con->createStatement();
 
     stmt->execute("CREATE DATABASE IF NOT EXISTS test");

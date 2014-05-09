@@ -14,4 +14,4 @@ then
   exit $E_BADARGS
 fi
  
-$MYSQL -u ubuntu -e "$SQL"
+$MYSQL -u root -p -e "$SQL"
