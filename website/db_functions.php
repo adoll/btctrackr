@@ -1,7 +1,7 @@
 <?php
 
-define("DB_USERNAME", "root");
-define("DB_PASSWORD", "privacy");
+define("DB_USERNAME", "ubuntu");
+define("DB_PASSWORD", "");
 define("DB_HOSTNAME", "localhost");
 define("DB_NAME", "test");
 

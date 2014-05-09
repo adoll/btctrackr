@@ -1,0 +1,197 @@
+<?php
+
+?>
+
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="img/favicon.ico">
+
+    <title>btctrackr.com</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="http://getbootstrap.com/examples/cover/cover.css" rel="stylesheet">
+
+<!-- Custom css
+ -->
+    <link href="./css/main.css" rel="stylesheet">
+
+  <body>
+
+
+    <div class="site-wrapper">
+
+      <div class="site-wrapper-inner">
+
+        <div class="cover-container">
+         
+          <div id="main">
+
+            <div id="trackdiv">
+              <img src="./img/logo_text_orange.png"><br />
+              <!--<h1 class="cover-heading" style="color:white">Enter an address:</h1>-->
+              <span style="font-size:18px;"> Enter an address to find out which other addresses likely belong to the same person. </span>
+              <input id="go-input" style="margin-top:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address" value="" placeholder="3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" autocomplete="off" required>
+              <button type="button" id="go-button" style="margin-top: 0px; height: 67px; width: 125px; vertical-align: bottom; font-size: 30px; font-weight: lighter; font-family: Lato-Hairline;" class="btn btn-large btn-warning">Track</button>
+            </div>
+
+            <div id="pathdiv" style="display:none">
+               <img src="./img/logo_text_orange.png"><br />
+              <!--<h1 class="cover-heading" style="color:white">Enter an address:</h1>-->
+              <span style="font-size:18px;"> Enter two addresses to find their shortest connecting path. </span>
+
+              <input id="go-input" style="margin-top:3px; margin-bottom:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address" value="" placeholder="3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" autocomplete="off" required>
+              <br />
+              <img src="./img/down_arrow.png" style="width:33px; height:40px"> &nbsp; &nbsp;                        
+              <img src="./img/down_arrow.png" style="width:33px; height:40px"> &nbsp; &nbsp;
+              <img src="./img/down_arrow.png" style="width:33px; height:40px">
+              <br />
+              <input id="go-input" style="margin-top:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address" value="" placeholder="1dice48cexAaxtGiTRJTNUT1mBqqunzM1" autocomplete="off" required>
+                            
+              <br /><br />
+              <button type="button" id="go-button" style="margin-top: 0px; height: 67px; width: 200px; vertical-align: bottom; font-size: 30px; font-weight: lighter; font-family: Lato-Hairline;" class="btn btn-large btn-warning">Shortest Path</button>
+            </div>
+
+            <div id="clusterdiv" style="display:none">
+              <img src="./img/logo_text_orange.png"><br />
+              <span style="font-size:18px;"> The address <span id="cluster_address" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span> likely belongs<br /> to an entity controlling <span id="cluster_numaddrs">30</span> other addresses and <span id="cluster_btc">0.0</span> ฿. </span>
+              <br /><br />
+              <div id="cluster_addresses">
+              </div>
+
+            </div>
+            <div class="mastfoot">
+              <div class="inner" style="padding-top:10px">
+                <a id="trackclick" href="#">Track</a> &middot;
+                <a id="pathclick" href="#">Shortest Path</a> &middot;
+                <!--<a id="contactclick" href="#">Contact</a>-->
+                <a id="contactclick" href="#" rel="popover" data-placement="top" data-content="admin@btctrackr.com">Contact</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="bootstrap/js/jquery.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="bootstrap/js/docs.min.js"></script>
+
+    <script>
+
+    var ROOTPATH = "http://www.btctrackr.com/";
+
+    $(document).ready(function()
+    {
+      $('#main').css("display", "none");
+      $('#main').fadeIn(1000);
+      $('#contactclick').popover({placement:'top'});
+    });
+
+    $('#trackclick').click(function() 
+    {
+      $('#pathdiv').css("display", "none");
+      $('#clusterdiv').css("display", "none");
+
+      // clear the clusterdiv, and the cluster_addresses
+      $('#cluster_numaddrs').html('');
+      $('#cluster_btc').html('');
+      $('#cluster_address').html('');
+      $('#cluster_addresses').html('');
+
+      $('#trackdiv').fadeIn(1000);
+    });
+
+    $('#pathclick').click(function() 
+    {
+      $('#trackdiv').css("display", "none");
+      $('#clusterdiv').css("display", "none");
+
+      // clear the clusterdiv, and the cluster_addresses
+      $('#cluster_numaddrs').html('');
+      $('#cluster_btc').html('');
+      $('#cluster_address').html('');
+      $('#cluster_addresses').html('');
+
+      $('#pathdiv').fadeIn(1000);
+    });
+
+    $('#go-button').click(function() 
+    {
+      $('#trackdiv').fadeOut(5);
+      var address = $('#go-input').val();
+
+      var url_string =  ROOTPATH + 'btctrackr_ajax.php';
+      $.ajax({
+        url: url_string,  //Server script to process data
+        type: 'POST',
+        data: { 
+          'address': address,
+          'function_name': 'get_cluster_from_address'
+        },
+        //Ajax events
+        success: function(result)
+        {
+          try
+          {
+            response = jQuery.parseJSON(result);
+            if(response.status === "error")
+            {               
+              $('#trackdiv').fadeIn(1000);
+              alert(response.message);
+            }
+            else if(response.status == "success")
+            {
+              var response_data = response.response_data;
+              var address = response_data.address;
+              var cluster_id = response_data.cluster_id;
+              var cluster_addresses = response_data.cluster_addresses;
+              var cluster_btc = response_data.cluster_btc;
+              var cluster_numaddrs = cluster_addresses.length;
+
+              // Change the values of the dynamic variables
+              $('#cluster_numaddrs').html(String(cluster_numaddrs - 1));
+              $('#cluster_btc').html(String(cluster_btc));
+              $('#cluster_address').html("<a target='_blank' href='https://blockchain.info/address/" + String(address) + "'>" + String(address) + "</a>");
+
+              for (var i = 0; i < cluster_addresses.length; i++) 
+              {
+                if(cluster_addresses[i] == address)
+                  continue;
+                $('#cluster_addresses').append("<span><a target='_blank' style='text-decoration:none' href='https://blockchain.info/address/" + cluster_addresses[i] + "'>" + cluster_addresses[i] + "</a></span><br />");
+              }
+
+              //  alert("Address " + address + " is associated with cluster " + cluster_id);
+            
+              $('#clusterdiv').fadeIn(1000);
+            }
+          }
+          catch(error)
+          {
+            $('#trackdiv').fadeIn(1000);
+            alert("Trouble connecting to server!");
+          }
+        }
+      });
+    });
+
+    </script>
+
+
+</body>
+
+</html>
