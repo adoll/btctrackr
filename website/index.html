@@ -119,6 +119,14 @@
     $('#pathclick').click(function() 
     {
       $('#trackdiv').css("display", "none");
+      $('#clusterdiv').css("display", "none");
+
+      // clear the clusterdiv, and the cluster_addresses
+      $('#cluster_numaddrs').html('');
+      $('#cluster_btc').html('');
+      $('#cluster_address').html('');
+      $('#cluster_addresses').html('');
+
       $('#pathdiv').fadeIn(1000);
     });
 
