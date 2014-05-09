@@ -13,6 +13,7 @@ body {
 
   body { 
     font-family: 'Lato-Regular', sans-serif;
+    font-weight:bold;
     background: url('../img/bitcoin.jpg') center center fixed; 
     -webkit-background-size: cover;
     -moz-background-size: cover;
@@ -48,7 +49,7 @@ input, textarea, button, span {
   margin: 0;
   padding: 0;
   border: 0;
-  font-family: 'Lato-Hairline', Calibri, Arial, sans-serif;
+  font-family: 'Lato-Regular', Calibri, Arial, sans-serif;
   font-weight: normal;
 
 }
@@ -77,7 +78,7 @@ div#cluster_addresses{
   margin-right:100px;
   font-size:18px; 
   color:#f0ad4e;
-  max-height:555px;
+  max-height:500px;
   overflow:scroll;
 }
 
