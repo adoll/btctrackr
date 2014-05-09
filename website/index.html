@@ -158,13 +158,13 @@
               // Change the values of the dynamic variables
               $('#cluster_numaddrs').html(String(cluster_numaddrs - 1));
               $('#cluster_btc').html(String(cluster_btc));
-              $('#cluster_address').html(String(address));
+              $('#cluster_address').html("<a href='text-decoration:none' href='https://blockchain.info/address/'" + String(address) + "</a>");
 
               for (var i = 0; i < cluster_addresses.length; i++) 
               {
                 if(cluster_addresses[i] == address)
                   continue;
-                $('#cluster_addresses').append("<span>" + cluster_addresses[i] + "</span><br />");
+                $('#cluster_addresses').append("<span><a style='text-decoration:none' href='https://blockchain.info/address/'" + cluster_addresses[i] + "''>" + cluster_addresses[i] + "</a></span><br />");
               }
 
               //  alert("Address " + address + " is associated with cluster " + cluster_id);
