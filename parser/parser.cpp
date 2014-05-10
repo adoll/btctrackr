@@ -258,6 +258,8 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
 
 void parser::close() {
    // update db
+  if (updater)
+    con = db_init_connection();
    for (auto i = address_map.begin(); i != address_map.end(); i++) {
       db_insert(con, i->first.encoded(), i->second);
    }
