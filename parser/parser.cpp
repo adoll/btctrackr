@@ -93,8 +93,10 @@ void parser::update(const block_type& blk) {
 	 payment_address address;
 	 if (extract(address, trans->outputs.begin()->script)) {
 	    mtx.lock();
-	    address_map[address] = cur_cluster;
-	    cur_cluster++;
+	    if (address_map[address] == 0) {
+	       address_map[address] = cur_cluster;
+	       cur_cluster++;
+	    }
 	    mtx.unlock();
 	 }
       }
