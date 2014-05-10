@@ -215,6 +215,7 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
    uint32_t cluster_no = 0;
    
    if (addresses == NULL || addresses->size() == 0) {
+     mtx.unlock();
      return;
    }
    unordered_set<payment_address>* cluster =
