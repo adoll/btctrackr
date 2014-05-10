@@ -42,8 +42,11 @@ private:
    // map of transaction to payment address
    unordered_map<hash_digest, uint32_t> trans_size_map;
    unordered_map<hash_digest, unordered_set<payment_address>*> common_addresses;
+
    unordered_map<payment_address, uint32_t> address_map;
-   unordered_map<uint32_t, unordered_set<payment_address>> closure_map;
+   unordered_map<uint32_t, unordered_set<payment_address>*> closure_map;
+   
+   void process_trans_map(unordered_set<payment_address> *addresses);
    void process_transaction(unordered_set<payment_address> *addresses);
    void handle_trans_fetch(      
       const std::error_code& ec,  // Status of operation

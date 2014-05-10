@@ -57,12 +57,8 @@ void parser::update(const block_type& blk) {
 	    if (extract(addr, input->script)) {
 	       size--;
 	       // if address wasn't already inserted
-	       if (addresses->find(addr) == addresses->end()) {
+	       if (addresses->find(addr) == addresses->end()) {  
 		  addresses->insert(addr);
-	       }
-	       // check for case when addresses are used as inputs twice
-	       else {
-		  size--;
 	       }
 	    }
 	    else {
@@ -70,7 +66,7 @@ void parser::update(const block_type& blk) {
 	    }
 	 } // end input loop
 	 if (size == 0) {
-	    process_transaction(addresses);
+	    process_trans_map(addresses);
 	    delete addresses;
 	 }
 	 else {
@@ -132,8 +128,12 @@ void parser::handle_trans_fetch(
       mtx1.lock();
       uint32_t size = trans_size_map[trans_hash];
       payment_address addr;
+      unordered_set<payment_address> *addresses = common_addresses[trans_hash];
       if (extract(addr, (tx.outputs.begin() + index)->script)) {
-	 unordered_set<payment_address> *addresses = common_addresses[trans_hash];
+	 if (addresses == NULL) {
+	    mtx1.unlock();
+	    return;
+	 }
 	 // if address wasn't already inserted
 	 if (addresses->find(addr) == addresses->end()) {
 	    addresses->insert(addr);
@@ -142,16 +142,17 @@ void parser::handle_trans_fetch(
 	 else {
 	    trans_size_map[trans_hash] = size - 1;
 	 }
-	 // we have all the addresses we need, process it
-	 if (addresses->size() == size) {
-	    process_transaction(addresses);
-	    trans_size_map.erase(trans_hash);
-	    common_addresses.erase(trans_hash);
-	 }
+	 
       }
       // the scipt was unsupported, we cannot include in closure
       else {
 	 trans_size_map[trans_hash] = size - 1;
+      }
+      // we have all the addresses we need, process it
+      if (addresses->size() == trans_size_map[trans_hash]) {
+	 process_trans_map(addresses);
+	 trans_size_map.erase(trans_hash);
+	 //common_addresses.erase(trans_hash);
       }
       mtx1.unlock();
    }
@@ -183,8 +184,10 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
 	    cluster->insert(cur_cluster->begin(), cur_cluster->end());
       }
    }
-   if (cluster_no == 0)
-      cluster_no = cur_cluster++;
+   if (cluster_no == 0) {
+      cluster_no = cur_cluster;
+      cur_cluster++;
+   }
    // make sure all addresses in the cluster have the right number
    
    for (auto addr = cluster->begin();
@@ -200,8 +203,58 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
    mtx.unlock();
 }
 
+void parser::process_trans_map(unordered_set<payment_address> *addresses) {
+   mtx.lock();
+   uint32_t cluster_no = 0;
+   
+   if (addresses == NULL || addresses->size() == 0) {
+      cerr << "bad\n";
+      exit(0);
+   }
+   unordered_set<payment_address>* cluster =
+      new unordered_set<payment_address>();
+   
+   // merging all clusters into one cluster
+   for (auto addr = addresses->begin();
+	addr != addresses->end(); addr++) {
+      uint32_t cur_no = address_map[*addr];
+      // 0 is the empty cluster, so if it isn't 0 merge everything and erase old
+      if (cur_no != 0) {
+	 unordered_set<payment_address> *cur_cluster = closure_map[cur_no];
+	 // update cluster no, in this way, we always allocate to smallest id
+	 if (cur_no < cluster_no || cluster_no == 0) {
+	    cluster_no = cur_no;
+	 }
+	 if (cur_cluster)
+	    cluster->insert(cur_cluster->begin(), cur_cluster->end());
+      }
+   }
+   if (cluster_no == 0) {
+      cluster_no = cur_cluster;
+      cur_cluster++;
+   }
+
+   // make sure all addresses in the cluster have the right number
+   for (auto addr1 = cluster->begin();
+	addr1 != cluster->end(); addr1++) {
+      address_map[*addr1] = cluster_no;
+   }
+   
+   //cerr << cluster_no << "\n";
+   
+   unordered_set<payment_address>* boring = closure_map[cluster_no];
+   delete boring;
+   closure_map[cluster_no] = boring;
+   
+   mtx.unlock();
+}
+
 void parser::close() {
-    delete con;
+   // update db
+   for (auto i = address_map.begin(); i != address_map.end(); i++) {
+      db_insert(con, i->first.encoded(), i->second);
+   }
+   delete con;
 }
 
 /*int main()
