@@ -70,7 +70,7 @@ void parser::update(const block_type& blk) {
 	 if (size == 0) {
 	    if (updater) process_trans_map(addresses);
 	    else process_transaction(addresses);
-	    //delete addresses;
+	    delete addresses;
 	 }
 	 else {
 	    hash_digest trans_hash = hash_transaction(*trans);
