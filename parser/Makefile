@@ -43,7 +43,7 @@ db.o: db.cpp db.hpp
 all: initchain fullnode updater downloader
 
 clean:
-	rm -f fullnode initchain parser
+	rm -f fullnode initchain parser updater downloader
 	rm -f *.o
 
 restart: initchain
