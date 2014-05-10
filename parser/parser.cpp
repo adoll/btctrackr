@@ -42,22 +42,54 @@ void parser::update(const block_type& blk) {
 	trans++) {
       // for every input, get the previous transaction hash
       if (!is_coinbase(*trans) && trans->inputs.size() > 1) {
-	 hash_digest trans_hash = hash_transaction(*trans);
-	 trans_size_map[trans_hash] = trans->inputs.size();
-	 // log_info() << "size" << inputs_size;
+	 
+	 uint32_t size =  trans->inputs.size();
+	 
+	 unordered_set<payment_address> *addresses = 
+	    new unordered_set<payment_address>();
+	 vector<transaction_input_type> inputs;
+	 
+	 
 	 for (auto input = trans->inputs.begin();
 	      input != trans->inputs.end(); input++) {
-
-	    
-	    auto handle_trans = bind(&parser::handle_trans_fetch,
-				     this, _1, _2,
-				     input->previous_output.index,
-				     hash_transaction(*trans));
-
-	    chain->fetch_transaction(input->previous_output.hash,
-				     handle_trans);
+	    payment_address addr;
+	    // if we successfully get address from input script
+	    if (extract(addr, input->script)) {
+	       size--;
+	       // if address wasn't already inserted
+	       if (addresses->find(addr) == addresses->end()) {
+		  addresses->insert(addr);
+	       }
+	       // check for case when addresses are used as inputs twice
+	       else {
+		  size--;
+	       }
+	    }
+	    else {
+	       inputs.push_back(*input);
+	    }
+	 } // end input loop
+	 if (size == 0) {
+	    process_transaction(addresses);
+	    delete addresses;
 	 }
-      }
+	 else {
+	    hash_digest trans_hash = hash_transaction(*trans);
+	    common_addresses[trans_hash] = addresses;
+	    trans_size_map[trans_hash] = size;
+	    for (auto i = inputs.begin(); i != inputs.end(); i++) {
+	       auto handle_trans = bind(&parser::handle_trans_fetch,
+					this, _1, _2,
+					i->previous_output.index,
+					hash_transaction(*trans));
+	       
+	       chain->fetch_transaction(i->previous_output.hash,
+					handle_trans);
+
+	    }
+	 }
+	 
+      } // end trans if statement
    }
 }
 
@@ -83,6 +115,7 @@ void parser::handle_block_fetch(
    const block_type& blk)       // Block header
 {
    if (!ec) this->update(blk);
+   
 }
 
 void parser::handle_trans_fetch(
@@ -101,10 +134,6 @@ void parser::handle_trans_fetch(
       payment_address addr;
       if (extract(addr, (tx.outputs.begin() + index)->script)) {
 	 unordered_set<payment_address> *addresses = common_addresses[trans_hash];
-	 if (addresses == NULL) {
-	    addresses = new unordered_set<payment_address>();
-	    common_addresses[trans_hash] = addresses;
-	 }
 	 // if address wasn't already inserted
 	 if (addresses->find(addr) == addresses->end()) {
 	    addresses->insert(addr);
@@ -117,9 +146,10 @@ void parser::handle_trans_fetch(
 	 if (addresses->size() == size) {
 	    process_transaction(addresses);
 	    trans_size_map.erase(trans_hash);
-	    //common_addresses.erase(trans_hash);
+	    common_addresses.erase(trans_hash);
 	 }
       }
+      // the scipt was unsupported, we cannot include in closure
       else {
 	 trans_size_map[trans_hash] = size - 1;
       }
