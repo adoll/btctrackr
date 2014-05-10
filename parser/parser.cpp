@@ -251,7 +251,7 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
    
    unordered_set<payment_address>* boring = closure_map[cluster_no];
    delete boring;
-   closure_map[cluster_no] = boring;
+   closure_map[cluster_no] = cluster;
    
    mtx.unlock();
 }
