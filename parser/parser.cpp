@@ -46,15 +46,12 @@ void parser::update(const block_type& blk) {
    for (auto trans = blk.transactions.begin(); trans != blk.transactions.end();
 	trans++) {
       // for every input, get the previous transaction hash
-      if (!is_coinbase(*trans) && trans->inputs.size() > 1) {
-	 
-	 uint32_t size =  trans->inputs.size();
-	 
+      if (!is_coinbase(*trans)) {
+	 uint32_t size =  trans->inputs.size();	 
 	 unordered_set<payment_address> *addresses = 
 	    new unordered_set<payment_address>();
 	 vector<transaction_input_type> inputs;
-	 
-	 
+  
 	 for (auto input = trans->inputs.begin();
 	      input != trans->inputs.end(); input++) {
 	    payment_address addr;
@@ -91,7 +88,16 @@ void parser::update(const block_type& blk) {
 	    }
 	 }
 	 
-      } // end trans if statement
+      } // end coinbase if
+      else {
+	 payment_address address;
+	 if (extract(address, trans->outputs.begin()->script)) {
+	    mtx.lock();
+	    address_map[address] = cur_cluster;
+	    cur_cluster++;
+	    mtx.unlock();
+	 }
+      }
    }
 }
 
