@@ -143,11 +143,11 @@ void parser::handle_trans_fetch(
       uint32_t size = trans_size_map[trans_hash];
       payment_address addr;
       unordered_set<payment_address> *addresses = common_addresses[trans_hash];
+      if (addresses == NULL) {
+	 mtx1.unlock();
+	 return;
+      }
       if (extract(addr, (tx.outputs.begin() + index)->script)) {
-	 if (addresses == NULL) {
-	    mtx1.unlock();
-	    return;
-	 }
 	 // if address wasn't already inserted
 	 if (addresses->find(addr) == addresses->end()) {
 	    addresses->insert(addr);
@@ -167,7 +167,7 @@ void parser::handle_trans_fetch(
 	 if (updater) process_trans_map(addresses);
 	 else process_transaction(addresses);
 	 trans_size_map.erase(trans_hash);
-	 //common_addresses.erase(trans_hash);
+	 common_addresses.erase(trans_hash);
       }
       mtx1.unlock();
    }
