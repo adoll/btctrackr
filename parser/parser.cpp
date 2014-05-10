@@ -73,7 +73,7 @@ void parser::update(const block_type& blk) {
 	 if (size == 0) {
 	    if (updater) process_trans_map(addresses);
 	    else process_transaction(addresses);
-	    delete addresses;
+	    //delete addresses;
 	 }
 	 else {
 	    hash_digest trans_hash = hash_transaction(*trans);
@@ -220,7 +220,8 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
    }
    unordered_set<payment_address>* cluster =
       new unordered_set<payment_address>();
-   
+   cluster->insert(addresses->begin(), addresses->end());
+
    // merging all clusters into one cluster
    for (auto addr = addresses->begin();
 	addr != addresses->end(); addr++) {
@@ -247,10 +248,10 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
       address_map[*addr1] = cluster_no;
    }
    
-   //cerr << cluster_no << "\n";
+   
    
    unordered_set<payment_address>* boring = closure_map[cluster_no];
-   delete boring;
+   //delete boring;
    closure_map[cluster_no] = cluster;
    
    mtx.unlock();
@@ -258,10 +259,11 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
 
 void parser::close() {
    // update db
-  if (updater)
-    con = db_init_connection();
-   for (auto i = address_map.begin(); i != address_map.end(); i++) {
-      db_insert(con, i->first.encoded(), i->second);
+   if (updater) {
+      con = db_init_connection();
+      for (auto i = address_map.begin(); i != address_map.end(); i++) {
+	 db_insert(con, i->first.encoded(), i->second);
+      }
    }
    delete con;
 }
