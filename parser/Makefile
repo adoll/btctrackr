@@ -43,11 +43,11 @@ db.o: db.cpp db.hpp
 all: initchain fullnode updater downloader
 
 clean:
-	rm -f fullnode initchain parser
+	rm -f fullnode initchain parser downloader updater
 	rm -f *.o
 
-restart: initchain
+restartDB:
+	./droptables.sh
+restart:
 	mkdir blockchain
 	./initchain blockchain
-	./droptables.sh
-
