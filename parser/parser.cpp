@@ -27,12 +27,17 @@ using namespace placeholders;
 // construct a parser, updating it to the current point in the blockchain
 parser::parser(blockchain* chainPtr, bool update) {
    chain = chainPtr;
-   con = db_init_connection();
-   cur_cluster = db_getmax(con);
-   cur_cluster++;
-   if (update) {
+   updater = update;
+   
+   if (updater) {
+      cur_cluster = 1;
       auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
       chain->fetch_last_height(height_fetched_func); 
+   }
+   else {
+      con = db_init_connection();
+      cur_cluster = db_getmax(con);
+      cur_cluster++;
    }
 }
 
@@ -66,7 +71,8 @@ void parser::update(const block_type& blk) {
 	    }
 	 } // end input loop
 	 if (size == 0) {
-	    process_trans_map(addresses);
+	    if (updater) process_trans_map(addresses);
+	    else process_transaction(addresses);
 	    delete addresses;
 	 }
 	 else {
@@ -150,7 +156,8 @@ void parser::handle_trans_fetch(
       }
       // we have all the addresses we need, process it
       if (addresses->size() == trans_size_map[trans_hash]) {
-	 process_trans_map(addresses);
+	 if (updater) process_trans_map(addresses);
+	 else process_transaction(addresses);
 	 trans_size_map.erase(trans_hash);
 	 //common_addresses.erase(trans_hash);
       }

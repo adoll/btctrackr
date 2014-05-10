@@ -39,6 +39,7 @@ private:
    // used in process_transaction
    mutex mtx;
    mutex mtx1;
+   bool updater;
    // map of transaction to payment address
    unordered_map<hash_digest, uint32_t> trans_size_map;
    unordered_map<hash_digest, unordered_set<payment_address>*> common_addresses;
