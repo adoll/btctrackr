@@ -20,7 +20,7 @@ $cluster[] = "1HP7n77z9eTko2Rejmp4qD62m2dezai5iB";
 $cluster[] = "12noPFqbvXwrGbUbS9TU6dUTGRygu9vgXa";
 
 
-foreach($address as $cluster)
+foreach($cluster as $address)
 {
 	$url .= "," . $address;
 }
