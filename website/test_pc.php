@@ -7,6 +7,9 @@
 // than 10 outstanding at any time.
 //
 // By Pete Warden <pete@petewarden.com>, freely reusable, see http://petewarden.typepad.com for more
+error_reporting( E_ALL );
+ini_set( "display_errors", 1 );
+
 
 require_once('parallelcurl.php');
 
