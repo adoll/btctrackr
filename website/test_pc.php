@@ -30,9 +30,7 @@ for($i = 0; $i < count($cluster); $i = $i + 5)
     {
         $url .= "," . $cluster[$j];
     }
-    echo $url;
-    echo "<br />";
-    //$parallel_curl->startRequest($url, 'on_request_done');
+    $parallel_curl->startRequest($url, 'on_request_done');
 }
 
 
@@ -67,7 +65,5 @@ function on_request_done($content, $url, $ch, $search)
 }
 
 var_dump($result_array);
-
-?>
 
 ?>
