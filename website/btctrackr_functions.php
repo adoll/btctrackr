@@ -1,5 +1,8 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
 // This file contains core btctrackr functions
 require_once("db_functions.php");
 
