@@ -3,10 +3,6 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-
-echo "hello";
-exit;
-
 $address = "1Shremdh9tVop1gxMzJ7baHxp6XX2WWRW";
 $url = "http://btc.blockr.io/api/v1/address/balance/" . $address;
 
@@ -24,7 +20,7 @@ $cluster[] = "1HP7n77z9eTko2Rejmp4qD62m2dezai5iB";
 $cluster[] = "12noPFqbvXwrGbUbS9TU6dUTGRygu9vgXa";
 
 
-foreach($address in $cluster)
+foreach($address as $cluster)
 {
 	$url .= "," . $address;
 }
