@@ -40,8 +40,9 @@ function get_cluster_from_address($address)
 			$cluster_addresses[] = $row["address"];
 		}
 
-		$cluster_addresses_balances = get_balances_from_addresses($cluster_addesses_balances);
+		$cluster_addresses_balances = get_balances_from_addresses($cluster_addresses_balances);
 
+		$return_array["success"] = true;
 		$return_array["address"] = $address;
 		$return_array["cluster_id"] = $cluster_id;
 		$return_array["cluster_addresses_balances"] = $cluster_addresses_balances;
