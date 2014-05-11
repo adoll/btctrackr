@@ -26,7 +26,7 @@ foreach($cluster as $address)
 }
 echo $url . "<br />";
 $result = file_get_contents($url);
-$object = json_decode($result);
+$object = json_decode($result, true);
 
 var_dump($object);
 $data = $object["data"];
