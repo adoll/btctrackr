@@ -1,5 +1,8 @@
 <?php
 
+echo "hello";
+exit;
+
 
 $address = "1Shremdh9tVop1gxMzJ7baHxp6XX2WWRW";
 $url = "http://btc.blockr.io/api/v1/address/balance/" . $address;
