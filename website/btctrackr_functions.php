@@ -46,7 +46,14 @@ function get_cluster_from_address($address)
 		$return_array["address"] = $address;
 		$return_array["cluster_id"] = $cluster_id;
 		$return_array["cluster_addresses_balances"] = $cluster_addresses_balances;
-		$return_array["cluster_btc"] = "0.0";
+		
+		// calculate total value of this cluster
+		$cluster_btc = 0.0;
+		for($i = 0; $i < count($cluster_addresses_balances); $i++)
+		{	
+			$cluster_btc += floatval($cluster_addresses_balances[$i]);
+		}
+		$return_array["cluster_btc"] = $cluster_btc;
 
 		return $return_array;
 	}
@@ -114,7 +121,7 @@ function on_request_done($content, $url, $ch, $search)
     foreach($responseobject["data"] as $address)
     {
         $address_name = $address["address"];
-        $address_balance = $address["balance"];
+        $address_balance = floatval($address["balance"]);
         $result_array[$address_name] = $address_balance;
     }
 }
