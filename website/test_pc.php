@@ -12,7 +12,6 @@ require_once('parallelcurl.php');
 
 define ('SEARCH_URL_PREFIX', 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=large&filter=0');
 
-echo "hello";
 
 // This function gets called back for each request that completes
 function on_request_done($content, $url, $ch, $search) {
@@ -93,25 +92,20 @@ $terms_list = array(
     "Jacob", "Lucy",
     "Michael", "Dora",
 );
-/*
-if (isset($argv[1])) {
-    $max_requests = $argv[1];
-} else {
-    $max_requests = 10;
-}
 
 $curl_options = array(
     CURLOPT_SSL_VERIFYPEER => FALSE,
     CURLOPT_SSL_VERIFYHOST => FALSE,
     CURLOPT_USERAGENT, 'Parallel Curl test script',
 );
-
-$parallel_curl = new ParallelCurl($max_requests, $curl_options);
+echo "1";
+$parallel_curl = new ParallelCurl(10, $curl_options);
+echo "2";
 
 foreach ($terms_list as $terms) {
+    echo $terms . "<br />";
     $search = '"'.$terms.' is a"';
     $search_url = SEARCH_URL_PREFIX.'&q='.urlencode($terms);
-    echo $search_url . "<br />";
     $parallel_curl->startRequest($search_url, 'on_request_done', $search);
 }
 
