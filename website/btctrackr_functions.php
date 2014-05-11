@@ -118,7 +118,7 @@ function on_request_done($content, $url, $ch, $search)
         return;
     }
 
-    if(!isset(($responseobject["data"]["address"])))
+    if(isset($responseobject["data"][0]))
     {
 	    foreach($responseobject["data"] as $address)
 	    {
