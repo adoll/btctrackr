@@ -13,10 +13,12 @@ if((strcmp($_POST['function_name'], 'get_cluster_from_address')==0) && isset($_P
 	if($response["success"] == true)
 	{
 	    return_ajax_success("success", $response);
+	    exit;
 	}
 	else
 	{
 		return_ajax_error();
+		exit;
 	}
 }
 // return error
