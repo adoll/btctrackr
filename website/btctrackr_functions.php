@@ -92,8 +92,8 @@ function get_balance_from_addresses($addresses)
 	// This will automatically run on destruct of the ParallelCurl object, so the next line is optional.
 	$parallel_curl->finishAllRequests();
 
-	global $return_array;
-	return $return_array;
+	global $result_array;
+	return $result_array;
 }
 
 // This function gets called back for each request that completes
