@@ -19,7 +19,6 @@ $cluster[] = "1EouuXgoNYYgEWX1erVarCWZYayF8wWhuR";
 $cluster[] = "1ChgTrAN8oyzdCUzWZCq5rf8tsRALzbje9";
 $cluster[] = "1Abwi5PC9TLLE93iLHoVr3SNYknoRXW81m";
 $cluster[] = "1HP7n77z9eTko2Rejmp4qD62m2dezai5iB";
-$cluster[] = "12noPFqbvXwrGbUbS9TU6dUTGRygu9vgXa";
 
 
 $parallel_curl = new ParallelCurl(10);
@@ -27,11 +26,13 @@ $parallel_curl = new ParallelCurl(10);
 for($i = 0; $i < count($cluster); $i = $i + 5)
 {
     $url = $base_url . $cluster[$i];
-    for ($j = $i + 1; $j < $j + 5; $j++) 
+    for ($j = $i + 1; $j < $i + 5; $j++) 
     {
-        $url .= $cluster[$j];
+        $url .= "," . $cluster[$j];
     }
-    $parallel_curl->startRequest($url, 'on_request_done');
+    echo $url;
+    echo "<br />";
+    //$parallel_curl->startRequest($url, 'on_request_done');
 }
 
 
