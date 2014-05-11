@@ -10,7 +10,7 @@ define("MAIN_TABLE_NAME", "test");
 
 $result_array = array();
 
-get_cluster_from_address($_GET["address"]);
+var_dump(get_cluster_from_address($_GET["address"]));
 
 // This function queries the database to get all of the addresses associated with the cluster_id of the given address
 // Parameters:
