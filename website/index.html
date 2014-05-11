@@ -159,7 +159,8 @@
               var response_data = response.response_data;
               var address = response_data.address;
               var cluster_id = response_data.cluster_id;
-              var cluster_addresses = response_data.cluster_addresses;
+              //var cluster_addresses = response_data.cluster_addresses;
+              var cluster_addresses_balances = response_data.cluster_addresses_balances;
               var cluster_btc = response_data.cluster_btc;
               var cluster_numaddrs = cluster_addresses.length;
 
@@ -168,13 +169,22 @@
               $('#cluster_btc').html(String(cluster_btc));
               $('#cluster_address').html("<a target='_blank' href='https://blockchain.info/address/" + String(address) + "'>" + String(address) + "</a>");
 
-              for (var i = 0; i < cluster_addresses.length; i++) 
+              /*for (var i = 0; i < cluster_addresses.length; i++) 
               {
                 if(cluster_addresses[i] == address)
                   continue;
                 $('#cluster_addresses').append("<span><a target='_blank' style='text-decoration:none' href='https://blockchain.info/address/" + cluster_addresses[i] + "'>" + cluster_addresses[i] + "</a></span><br />");
-              }
+              }*/
 
+              console.log(cluster_addresses_balances);
+              for (var address_balance in cluster_addresses_balances) 
+              {
+                // address is the name of the main address that was tracked
+                if(address_balance == address)
+                  continue;
+
+                $('#cluster_addresses').append("<span><a target='_blank' style='text-decoration:none' href='https://blockchain.info/address/" + cluster_addresses[i] + "'>" + cluster_addresses[i] + '|' + cluster_addresses_balances[address_balance] + "</a></span><br />");
+              }
               //  alert("Address " + address + " is associated with cluster " + cluster_id);
             
               $('#clusterdiv').fadeIn(1000);

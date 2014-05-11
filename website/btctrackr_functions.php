@@ -42,13 +42,12 @@ function get_cluster_from_address($address)
 			$cluster_addresses[] = $row["address"];
 		}
 
+		$cluster_addresses_balances = get_balances_from_addresses($cluster_addesses_balances);
+
 		$return_array["address"] = $address;
 		$return_array["cluster_id"] = $cluster_id;
-		$return_array["cluster_addresses"] = $cluster_addresses;
+		$return_array["cluster_addresses_balances"] = $cluster_addresses_balances;
 		$return_array["cluster_btc"] = "0.0";
-
-		echo "cluster_addresses" . "<br /><br />";
-		var_dump(get_balance_from_addresses($cluster_addresses));
 
 		return $return_array;
 	}
@@ -60,7 +59,7 @@ function get_cluster_from_address($address)
 //	addresses: an array of Bitcoin addresses we want to retrieve balances for
 // Returns:
 //	addresses_balances: an associative array mapping every address to a balance
-function get_balance_from_addresses($addresses)
+function get_balances_from_addresses($addresses)
 {
 	require_once('parallelcurl.php');
 
