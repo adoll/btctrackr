@@ -74,11 +74,13 @@ function get_balances_from_addresses($addresses)
 	$parallel_curl = new ParallelCurl(100);
 
 	$num_processed = 0;
-	for($i = 0; $i < count($addresses); $i = $i + 30)
+
+	// Process the addresses 20 at a time
+	for($i = 0; $i < count($addresses); $i = $i + 20)
 	{
 	    $url = $base_url . $addresses[$i];
 	    $num_processed += 1;
-	    for ($j = $i + 1; $j < $i + 30; $j++) 
+	    for ($j = $i + 1; $j < $i + 20; $j++) 
 	    {
 	    	if($j == count($addresses))
 	    		break;
@@ -88,9 +90,15 @@ function get_balances_from_addresses($addresses)
 	    $parallel_curl->startRequest($url, 'on_request_done');
 	}
 
+	// Process the remainder of the addresses
 	if($num_processed < count($addresses))
 	{
-		// do stuff here
+		$url = $base_url . $addresses[$num_processed];
+		for($i = $num_processed + 1; $i < count($addresses); $i++)
+		{
+			$url .= "," . $addresses[$i];
+		}
+		$parallel_curl->startRequest($url, 'on_request_done');
 	}
 
 	// This should be called when you need to wait for the requests to finish.
