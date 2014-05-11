@@ -9,12 +9,6 @@ initchain.o: initchain.cpp
 initchain: initchain.o
 	$(CXX) -o $@ $< $(LIBS)
 
-priv.o: priv.cpp
-	$(CXX) -o $@ -c $< $(CXXFLAGS)
-
-priv: priv.o
-	$(CXX) -o $@ $< $(LIBS)
-
 parser.o: parser.cpp
 	$(CXX) -o $@ -c -I/usr/local/include/cppconn -Wl,-Bdynamic $< $(CXXFLAGS)
 
@@ -36,18 +30,22 @@ downloader.o: downloader.cpp
 downloader: downloader.o
 	$(CXX) -o $@ $< $(LIBS)
 
+path.o: path.cpp
+	$(CXX) -o $@ -c $< $(CXXFLAGS)
+
+path: path.o
+	$(CXX) -o $@ -c $< $(CXXFLAGS)
 
 db.o: db.cpp db.hpp
 	$(CXX) -c -I/usr/local/include -I/usr/local/include/cppconn -Wl,-Bdynamic db.cpp $(CXXFLAGS)	
 
-all: initchain fullnode updater downloader
+all: initchain fullnode updater downloader path
 
 clean:
-	rm -f fullnode initchain parser updater downloader
+	rm -f fullnode initchain parser updater downloader path
 	rm -f *.o
 
 restart: initchain
-	mkdir blockchain
 	./initchain blockchain
 	./droptables.sh
 

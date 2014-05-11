@@ -47,6 +47,7 @@ private:
    unordered_map<payment_address, uint32_t> address_map;
    unordered_map<uint32_t, unordered_set<payment_address>*> closure_map;
    
+   unordered_map<uint32_t, unordered_set<uint32_t>*> links;
    void process_trans_map(unordered_set<payment_address> *addresses);
    void process_transaction(unordered_set<payment_address> *addresses);
    void handle_trans_fetch(      
