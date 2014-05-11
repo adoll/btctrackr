@@ -118,7 +118,7 @@ function on_request_done($content, $url, $ch, $search)
         return;
     }
 
-    if(count($responseobject["data"]) > 1)
+    if(is_array($responseobject["data"]))
     {
 	    foreach($responseobject["data"] as $address)
 	    {
@@ -127,7 +127,7 @@ function on_request_done($content, $url, $ch, $search)
 	        $result_array[$address_name] = $address_balance;
 	    }
 	}
-	else
+	else if(is_object($responseobject["data"]))
 	{
 		$address_name = $address["address"];
 		$address_balance = floatval($address["balance"]);
