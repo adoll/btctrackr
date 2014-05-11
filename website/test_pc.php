@@ -1,23 +1,47 @@
 <?php
-// 
-
-// A test script for the ParallelCurl class
-// 
-// This example fetches a 100 different results from Google's search API, with no more
-// than 10 outstanding at any time.
-//
-// By Pete Warden <pete@petewarden.com>, freely reusable, see http://petewarden.typepad.com for more
-error_reporting( E_ALL );
-ini_set( "display_errors", 1 );
 
 require_once('parallelcurl.php');
 
-define ('SEARCH_URL_PREFIX', 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=large&filter=0');
+$base_url = "http://btc.blockr.io/api/v1/address/balance/";
+$result_array = array();
+
+$cluster = array();
+$cluster[] = "1Shremdh9tVop1gxMzJ7baHxp6XX2WWRW";
+$cluster[] = "12KKNwUSevCtLzoc2vku9V3KQVYis34SXn";
+$cluster[] = "18QYtHD4YWen6WfcpLCr3mffsWTEUevgJL";
+$cluster[] = "18HFpwckniwq6NWr87AvGaBv5aSogo9qnp";
+$cluster[] = "1HiyugiweAkjnusau2eYSdrHrqfnaxxhVP";
+$cluster[] = "1Fb8S9bM5KmjbzXBNtzXSqpDcPAnZCvYPN";
+$cluster[] = "1EouuXgoNYYgEWX1erVarCWZYayF8wWhuR";
+$cluster[] = "1ChgTrAN8oyzdCUzWZCq5rf8tsRALzbje9";
+$cluster[] = "1Abwi5PC9TLLE93iLHoVr3SNYknoRXW81m";
+$cluster[] = "1HP7n77z9eTko2Rejmp4qD62m2dezai5iB";
+$cluster[] = "12noPFqbvXwrGbUbS9TU6dUTGRygu9vgXa";
+
+
+$parallel_curl = new ParallelCurl(10);
+
+for($i = 0; $i < len($cluster); $i = $i + 5)
+{
+    $url = $base_url . $cluster[$i];
+    for ($j = $i + 1; $j < $j + 5; $j++) 
+    {
+        $url .= $cluster[$j];
+    }
+    $parallel_curl->startRequest($url, 'on_request_done');
+}
+
+
+// This should be called when you need to wait for the requests to finish.
+// This will automatically run on destruct of the ParallelCurl object, so the next line is optional.
+$parallel_curl->finishAllRequests();
 
 
 // This function gets called back for each request that completes
-function on_request_done($content, $url, $ch, $search) {
-    
+function on_request_done($content, $url, $ch, $search) 
+{    
+    global $result_array;
+
     $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);    
     if ($httpcode !== 200) {
         print "Fetch error $httpcode for '$url'\n";
@@ -25,94 +49,21 @@ function on_request_done($content, $url, $ch, $search) {
     }
 
     $responseobject = json_decode($content, true);
-    if (empty($responseobject['responseData']['results'])) {
+    if (empty($responseobject['data'])) {
         print "No results found for '$search'\n";
         return;
     }
 
-    print "********\n";
-    print "$search:\n";
-    print "********\n";
-
-    $allresponseresults = $responseobject['responseData']['results'];
-    foreach ($allresponseresults as $responseresult) {
-        $title = $responseresult['title'];
-        print "$title\n";
+    foreach($responseobject["data"] as $address)
+    {
+        $address_name = $address["address"];
+        $address_balance = $address["balance"];
+        $result_array[$address_name] = $address_balance;
     }
 }
 
-// The terms to search for on Google
-$terms_list = array(
-    "John", "Mary",
-    "William", "Anna",
-    "James", "Emma",
-    "George", "Elizabeth",
-    "Charles", "Margaret",
-    "Frank", "Minnie",
-    "Joseph", "Ida",
-    "Henry", "Bertha",
-    "Robert", "Clara",
-    "Thomas", "Alice",
-    "Edward", "Annie",
-    "Harry", "Florence",
-    "Walter", "Bessie",
-    "Arthur", "Grace",
-    "Fred", "Ethel",
-    "Albert", "Sarah",
-    "Samuel", "Ella",
-    "Clarence", "Martha",
-    "Louis", "Nellie",
-    "David", "Mabel",
-    "Joe", "Laura",
-    "Charlie", "Carrie",
-    "Richard", "Cora",
-    "Ernest", "Helen",
-    "Roy", "Maude",
-    "Will", "Lillian",
-    "Andrew", "Gertrude",
-    "Jesse", "Rose",
-    "Oscar", "Edna",
-    "Willie", "Pearl",
-    "Daniel", "Edith",
-    "Benjamin", "Jennie",
-    "Carl", "Hattie",
-    "Sam", "Mattie",
-    "Alfred", "Eva",
-    "Earl", "Julia",
-    "Peter", "Myrtle",
-    "Elmer", "Louise",
-    "Frederick", "Lillie",
-    "Howard", "Jessie",
-    "Lewis", "Frances",
-    "Ralph", "Catherine",
-    "Herbert", "Lula",
-    "Paul", "Lena",
-    "Lee", "Marie",
-    "Tom", "Ada",
-    "Herman", "Josephine",
-    "Martin", "Fanny",
-    "Jacob", "Lucy",
-    "Michael", "Dora",
-);
+var_dump($result_array);
 
-$curl_options = array(
-    CURLOPT_SSL_VERIFYPEER => FALSE,
-    CURLOPT_SSL_VERIFYHOST => FALSE,
-    CURLOPT_USERAGENT, 'Parallel Curl test script',
-);
-echo "1";
-$parallel_curl = new ParallelCurl(10, $curl_options);
-echo "2";
-
-foreach ($terms_list as $terms) {
-    echo $terms . "<br />";
-    //$search = '"'.$terms.' is a"';
-    //$search_url = SEARCH_URL_PREFIX.'&q='.urlencode($terms);
-    //$parallel_curl->startRequest($search_url, 'on_request_done', $search);
-}
-
-// This should be called when you need to wait for the requests to finish.
-// This will automatically run on destruct of the ParallelCurl object, so the next line is optional.
-$parallel_curl->finishAllRequests();
+?>
 
 ?>
