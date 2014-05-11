@@ -47,7 +47,7 @@ function get_cluster_from_address($address)
 		$return_array["cluster_addresses"] = $cluster_addresses;
 		$return_array["cluster_btc"] = "0.0";
 
-		echo "cluster_addresses" . "<br />";
+		echo "cluster_addresses" . "<br /><br />";
 		var_dump(get_balance_from_addresses($cluster_addresses));
 
 		return $return_array;
@@ -73,7 +73,7 @@ function get_balance_from_addresses($addresses)
 	{
 	    $url = $base_url . $addresses[$i];
 	    $num_processed += 1;
-	    for ($j = $i + 1; $j < $i + 5; $j++) 
+	    for ($j = $i + 1; $j < $i + 30; $j++) 
 	    {
 	    	if($j == count($addresses))
 	    		break;
