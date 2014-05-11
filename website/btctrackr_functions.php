@@ -118,12 +118,21 @@ function on_request_done($content, $url, $ch, $search)
         return;
     }
 
-    foreach($responseobject["data"] as $address)
+    if(count($responseobject["data"]) > 1)
     {
-        $address_name = $address["address"];
-        $address_balance = floatval($address["balance"]);
-        $result_array[$address_name] = $address_balance;
-    }
+	    foreach($responseobject["data"] as $address)
+	    {
+	        $address_name = $address["address"];
+	        $address_balance = floatval($address["balance"]);
+	        $result_array[$address_name] = $address_balance;
+	    }
+	}
+	else
+	{
+		$address_name = $address["address"];
+		$address_balance = floatval($address["balance"]);
+		$result_array[$address_name] = $address_balance;
+	}
 }
 
 
