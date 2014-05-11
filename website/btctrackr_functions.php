@@ -87,7 +87,7 @@ function get_balance_from_addresses($addresses)
 }
 
 // This function gets called back for each request that completes
-private function on_request_done($content, $url, $ch, $search) 
+function on_request_done($content, $url, $ch, $search) 
 {    
     global $result_array;
 
