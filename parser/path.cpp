@@ -70,14 +70,14 @@ int main(int argc, char** argv)
    std::string dst = argv[2];
    uint32_t src_cluster_no = db_get(con, src);
    uint32_t dst_cluster_no = db_get(con, dst);
-   if (dst_cluster_no == 0) log_info() << "fail";
+   
    std::unordered_set<std::string>* src_cluster = db_getset(con, src_cluster_no);
    std::unordered_set<std::string>* dst_cluster = db_getset(con, dst_cluster_no);
    std::unordered_set<hash_digest> src_out_trans;
 
    for (auto addr = src_cluster->begin(); addr != src_cluster->end(); addr++) {
       payment_address src_addr;
-      log_info() << *addr;
+
       if (!src_addr.set_encoded(*addr))
       {
 	 log_fatal() << "Invalid address";
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
    }
    
    for (auto addr = dst_cluster->begin(); addr != dst_cluster->end(); addr++) {
-      log_info() << *addr;
+   
       payment_address dst_addr;
       if (!dst_addr.set_encoded(*addr))
       {
