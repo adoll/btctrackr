@@ -6,8 +6,6 @@ ini_set('display_errors', '1');
 require_once("db_functions.php");
 require_once("btctrackr_functions.php");
 
-define("MAIN_TABLE_NAME", "test");
-
 // This is an AJAX handler for various btctrackr core functions
 if((strcmp($_POST['function_name'], 'get_cluster_from_address')==0) && isset($_POST["address"]))
 {
