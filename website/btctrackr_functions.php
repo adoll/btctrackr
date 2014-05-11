@@ -49,9 +49,9 @@ function get_cluster_from_address($address)
 		
 		// calculate total value of this cluster
 		$cluster_btc = 0.0;
-		for($i = 0; $i < count($cluster_addresses_balances); $i++)
+		foreach($cluster_addresses_balances as $address => $balance)
 		{	
-			$cluster_btc += floatval($cluster_addresses_balances[$i]);
+			$cluster_btc += floatval($balance);
 		}
 		$return_array["cluster_btc"] = $cluster_btc;
 
