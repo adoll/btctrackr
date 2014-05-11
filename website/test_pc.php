@@ -1,5 +1,8 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
 require_once('parallelcurl.php');
 
 $base_url = "http://btc.blockr.io/api/v1/address/balance/";
