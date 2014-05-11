@@ -162,6 +162,8 @@
               var cluster_addresses_balances = response_data.cluster_addresses_balances;
               var cluster_btc = response_data.cluster_btc;
               var cluster_numaddrs = cluster_addresses_balances.length;
+              alert(cluster_numaddrs);
+              console.log(cluster_addresses_balances.length);
 
               // Change the values of the dynamic variables
               $('#cluster_numaddrs').html(String(cluster_numaddrs - 1));
