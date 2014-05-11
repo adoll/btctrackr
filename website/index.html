@@ -177,13 +177,13 @@
               }*/
 
               console.log(cluster_addresses_balances);
-              for (var address_balance in cluster_addresses_balances) 
+              for (var cluster_address in cluster_addresses_balances) 
               {
                 // address is the name of the main address that was tracked
-                if(address_balance == address)
+                if(cluster_address == address)
                   continue;
 
-                $('#cluster_addresses').append("<span><a target='_blank' style='text-decoration:none' href='https://blockchain.info/address/" + cluster_addresses[i] + "'>" + cluster_addresses[i] + '|' + cluster_addresses_balances[address_balance] + "</a></span><br />");
+                $('#cluster_addresses').append("<span><a target='_blank' style='text-decoration:none' href='https://blockchain.info/address/" + cluster_address + "'>" + cluster_address + '|' + cluster_addresses_balances[cluster_address] + "</a></span><br />");
               }
               //  alert("Address " + address + " is associated with cluster " + cluster_id);
             
