@@ -10,7 +10,6 @@
 error_reporting( E_ALL );
 ini_set( "display_errors", 1 );
 
-
 require_once('parallelcurl.php');
 
 define ('SEARCH_URL_PREFIX', 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=large&filter=0');
@@ -107,13 +106,13 @@ echo "2";
 
 foreach ($terms_list as $terms) {
     echo $terms . "<br />";
-    $search = '"'.$terms.' is a"';
-    $search_url = SEARCH_URL_PREFIX.'&q='.urlencode($terms);
-    $parallel_curl->startRequest($search_url, 'on_request_done', $search);
+    //$search = '"'.$terms.' is a"';
+    //$search_url = SEARCH_URL_PREFIX.'&q='.urlencode($terms);
+    //$parallel_curl->startRequest($search_url, 'on_request_done', $search);
 }
 
 // This should be called when you need to wait for the requests to finish.
 // This will automatically run on destruct of the ParallelCurl object, so the next line is optional.
 $parallel_curl->finishAllRequests();
-*/
+
 ?>
