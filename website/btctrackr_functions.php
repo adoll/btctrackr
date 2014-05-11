@@ -48,7 +48,7 @@ function get_cluster_from_address($address)
 		$return_array["cluster_btc"] = "0.0";
 
 		echo "cluster_addresses" . "<br />";
-		var_dump(get_balance_from_addresses($cluster_addressses));
+		var_dump(get_balance_from_addresses($cluster_addresses));
 
 		return $return_array;
 	}
