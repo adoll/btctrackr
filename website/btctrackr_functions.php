@@ -129,8 +129,8 @@ function on_request_done($content, $url, $ch, $search)
 	}
 	else
 	{
-		$address_name = $address["address"];
-		$address_balance = floatval($address["balance"]);
+		$address_name = $responseobject["data"]["address"];
+		$address_balance = floatval($responseobject["data"]["balance"]);
 		$result_array[$address_name] = $address_balance;
 	}
 }
