@@ -19,11 +19,13 @@
 *.exe
 *.out
 *.app
-parser
-initchain
-fullnode
-updater
-
+parser/parser
+parser/initchain
+parser/fullnode
+parser/updater
+parser/downloader
+parser/path
+ 
 # Blockchain database directory
 blockchain
 
