@@ -6,7 +6,7 @@
  * libbitcoin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License with
  * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) 
+ * Foundation, either version 3 of the License, or (at your option)
  * any later version. For more information see LICENSE.
  *
  * This program is distributed in the hope that it will be useful,
@@ -18,76 +18,113 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/bitcoin.hpp>
+#include <future>
+#include <list>
+#include <unordered_set>
+#include "db.hpp"
 using namespace bc;
 
 blockchain* c = nullptr;
-std::string addr;
+std::list<payment_address> addr_queue;
 
-void blockchain_started(const std::error_code& ec);
-void history_fetched(const std::error_code& ec,
-		     const blockchain::history_list& history);
 
-void blockchain_started(const std::error_code& ec)
-{
-   if (ec)
-   {
-      log_error() << "Blockchain failed to start: " << ec.message();
-      return;
-   }
-   log_info() << "Blockchain started.";
-   payment_address payaddr;
-   if (!payaddr.set_encoded(addr))
-   {
-      log_fatal() << "Invalid address";
-      return;
-   }
-   c->fetch_history(payaddr, history_fetched);
-}
-
-void history_fetched(const std::error_code& ec,
-		     const blockchain::history_list& history)
-{
-   if (ec)
-   {
-      log_error() << "Failed to fetch history: " << ec.message();
-      return;
-   }
-#define LOG_RESULT "result"
-   uint64_t total_recv = 0, balance = 0;
-   for (const auto& row: history)
-   {
-      uint64_t value = row.value;
-      log_info() << "value: " << value;
-      BITCOIN_ASSERT(value >= 0);
-      total_recv += value;
-      log_info() << row.spend.hash;
-      if (row.spend.hash == null_hash) {
-	 balance += value;
-	 log_info() << "balance " << balance;
-      }
-   }
-   log_debug(LOG_RESULT) << "Queried " << history.size()
-			 << " outpoints, values and their spends.";
-   log_debug(LOG_RESULT) << "Total received: " << total_recv;
-   log_debug(LOG_RESULT) << "Balance: " << balance;
-   log_info(LOG_RESULT) << "History fetched";
+blockchain::history_list get_history(payment_address payaddr) {
+   std::promise<blockchain::history_list> history_promise;
+   auto history_fetched1 =
+      [&history_promise](const std::error_code& ec,
+	                 const blockchain::history_list& history)
+      {
+	 history_promise.set_value(history);
+      };
+   c->fetch_history(payaddr, history_fetched1);
+   return history_promise.get_future().get();
 }
 
 int main(int argc, char** argv)
 {
-   if (argc != 2)
+   if (argc != 3)
    {
       log_info() << "Usage: balance ADDRESS";
       return -1;
    }
-   addr = argv[1];
+   sql::Connection *con = db_init_connection();
    threadpool pool(1);
    leveldb_blockchain chain(pool);
    c = &chain;
+   std::promise<std::error_code> ec_promise;
+   auto blockchain_started =
+      [&ec_promise](const std::error_code& ec)
+      {
+	 ec_promise.set_value(ec);
+      };
    chain.start("blockchain", blockchain_started);
+   std::error_code ec = ec_promise.get_future().get();
+   if (ec)
+   {
+      log_error() << "Problem starting blockchain: " << ec.message();
+      return 1;
+   }
+
+
+   std::string src = argv[1];
+   std::string dst = argv[2];
+   uint32_t src_cluster_no = db_get(con, src);
+   uint32_t dst_cluster_no = db_get(con, dst);
+   if (dst_cluster_no == 0) log_info() << "fail";
+   std::unordered_set<std::string>* src_cluster = db_getset(con, src_cluster_no);
+   std::unordered_set<std::string>* dst_cluster = db_getset(con, dst_cluster_no);
+   std::unordered_set<hash_digest> src_out_trans;
+
+   for (auto addr = src_cluster->begin(); addr != src_cluster->end(); addr++) {
+      payment_address src_addr;
+      log_info() << *addr;
+      if (!src_addr.set_encoded(*addr))
+      {
+	 log_fatal() << "Invalid address";
+	 return 1;
+      }
+
+      blockchain::history_list history = get_history(src_addr);
+      
+      for (const auto& row: history)
+      {
+	 uint32_t value = row.value;
+	 BITCOIN_ASSERT(value >= 0);
+	 //log_info() << row.spend.hash;
+	 if (row.spend.hash != null_hash) {
+	    src_out_trans.insert(row.spend.hash);
+	 }
+      }
+   }
+   
+   for (auto addr = dst_cluster->begin(); addr != dst_cluster->end(); addr++) {
+      log_info() << *addr;
+      payment_address dst_addr;
+      if (!dst_addr.set_encoded(*addr))
+      {
+	 log_fatal() << "Invalid address";
+	 return 1;
+      }
+
+      blockchain::history_list history = get_history(dst_addr);
+      for (const auto& row: history)
+      {
+	 uint32_t value = row.value;
+	 BITCOIN_ASSERT(value >= 0);
+	 log_info() << row.output.hash;
+	 if (src_out_trans.find(row.output.hash) != src_out_trans.end()) {
+	    log_info() << "found " << row.output.hash;
+	    pool.shutdown();
+	    pool.join();
+	    chain.stop();
+	    return 0;
+	 }
+      }
+      
+   }
+
    pool.shutdown();
    pool.join();
    chain.stop();
    return 0;
 }
-

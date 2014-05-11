@@ -33,8 +33,8 @@ downloader: downloader.o
 path.o: path.cpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS)
 
-path: path.o
-	$(CXX) -o $@ -c $< $(CXXFLAGS)
+path: path.o db.o
+	$(CXX) -o $@ $< db.o $(LIBS) -lmysqlcppconn
 
 db.o: db.cpp db.hpp
 	$(CXX) -c -I/usr/local/include -I/usr/local/include/cppconn -Wl,-Bdynamic db.cpp $(CXXFLAGS)	
