@@ -1,4 +1,3 @@
-#!/usr/bin/php
 <?php
 // 
 // A test script for the ParallelCurl class
@@ -109,6 +108,7 @@ $parallel_curl = new ParallelCurl($max_requests, $curl_options);
 foreach ($terms_list as $terms) {
     $search = '"'.$terms.' is a"';
     $search_url = SEARCH_URL_PREFIX.'&q='.urlencode($terms);
+    echo $search_url . "<br />";
     $parallel_curl->startRequest($search_url, 'on_request_done', $search);
 }
 
