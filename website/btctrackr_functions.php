@@ -26,7 +26,7 @@ function get_cluster_from_address($address)
 	$return_array = array();
 
 	$mysqli = db_connect();
-	$address = $mysqli->real_escape_string($_POST["address"]);
+	$address = $mysqli->real_escape_string($address);
 	$query = "SELECT cluster FROM " . MAIN_TABLE_NAME . " WHERE address = '$address'";
 	$result = $mysqli->query($query);
 
