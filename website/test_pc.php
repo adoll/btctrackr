@@ -1,5 +1,12 @@
+
+
 <?php
 // 
+phpinfo();
+
+exit;
+?>
+
 // A test script for the ParallelCurl class
 // 
 // This example fetches a 100 different results from Google's search API, with no more
