@@ -24,7 +24,7 @@ $cluster[] = "12noPFqbvXwrGbUbS9TU6dUTGRygu9vgXa";
 
 $parallel_curl = new ParallelCurl(10);
 
-for($i = 0; $i < strlen($cluster); $i = $i + 5)
+for($i = 0; $i < count($cluster); $i = $i + 5)
 {
     $url = $base_url . $cluster[$i];
     for ($j = $i + 1; $j < $j + 5; $j++) 
