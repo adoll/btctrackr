@@ -17,7 +17,7 @@ if((strcmp($_POST['function_name'], 'get_cluster_from_address')==0) && isset($_P
 	}
 	else
 	{
-		return_ajax_error();
+		return_ajax_error($response["error_message"]);
 		exit;
 	}
 }
