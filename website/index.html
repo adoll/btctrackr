@@ -136,6 +136,7 @@
     {
       $('#trackdiv').fadeOut(5);
       var address = $('#go-input').val();
+      address = address.trim();
 
       // If they didn't input an address, use the address that doesn't work on Bitiodine
       if(address.length == 0)
