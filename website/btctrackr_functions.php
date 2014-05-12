@@ -54,7 +54,7 @@ function get_cluster_from_address($address)
 			$cluster_btc += floatval($balance);
 		}
 		// show one decimal place
-		$return_array["cluster_btc"] = number_format($cluster_btc, 1);
+		$return_array["cluster_btc"] = number_format($cluster_btc, 3);
 
 		return $return_array;
 	}
@@ -135,7 +135,7 @@ function on_request_done($content, $url, $ch, $search)
 	        $address_balance = floatval($address["balance"]);
 
 	        // show one decimal place
-	        $result_array[$address_name] = number_format($address_balance, 1); 
+	        $result_array[$address_name] = number_format($address_balance, 3); 
 	    }
 	}
 	else
@@ -144,7 +144,7 @@ function on_request_done($content, $url, $ch, $search)
 		$address_balance = floatval($responseobject["data"]["balance"]);
 
 		// show one decimal place
-		$result_array[$address_name] = number_format($address_balance, 1);
+		$result_array[$address_name] = number_format($address_balance, 3);
 	}
 }
 
