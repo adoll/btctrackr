@@ -70,10 +70,10 @@ function get_cluster_from_address($address)
 	}
 	else
 	{
-		// First, check if this is a valid address
 		$response_data = file_get_contents("http://btc.blockr.io/api/v1/address/info/" . $address);
 		$response_json = json_decode($response_data, true);
 		$is_valid = $response_json["data"]["is_valid"];
+		$address_balance = floatval($reponse_json["data"]["balance"]));
 
 		if($is_valid == false)
 		{
@@ -81,9 +81,16 @@ function get_cluster_from_address($address)
 			return $return_array;
 		}
 
-		// This address is a valid address not in our database, so query the blockr.io API for address balance information
-		$cluster_addresses = array($address);
-		$cluster_addresses_balances = get_balances_from_addresses($cluster_addresses);
+		// This address is a valid address not in our database, so pull the balance information from the the blockr.io API
+		$cluster_addresses_balances = array();
+		if($address_balance === 0.0)
+		{
+			$cluster_addresses_balances[$address] = $address_balance;
+		}
+		else
+		{
+			$cluster_addresses_balances[$address] = number_format($address_balance, 3);
+		}
 		$return_array["success"] = true;
 		$return_array["address"] = $address;
 		$return_array["cluster_addresses_balances"] = $cluster_addresses_balances;
@@ -144,7 +151,7 @@ function get_balances_from_addresses($addresses)
 
 // This function gets called back for each request that completes
 function on_request_done($content, $url, $ch, $search) 
-{    
+{
     global $result_array;
 
     $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);    
@@ -193,6 +200,5 @@ function on_request_done($content, $url, $ch, $search)
 		}
 	}
 }
-
 
 ?>
