@@ -23,9 +23,10 @@
 #include "db.hpp"
 #include <bitcoin/bitcoin.hpp>
 #include <unordered_set>
+#include <unordered_map>
 #include <mutex>
 using namespace bc;
-using namespace std;
+
 class parser
 {
 public:
@@ -37,19 +38,19 @@ private:
    blockchain* chain = nullptr;
    uint32_t cur_cluster;
    // used in process_transaction
-   mutex mtx;
-   mutex mtx1;
+   std::mutex mtx;
+   std::mutex mtx1;
    bool updater;
    // map of transaction to payment address
-   unordered_map<hash_digest, uint32_t> trans_size_map;
-   unordered_map<hash_digest, unordered_set<payment_address>*> common_addresses;
+   std::unordered_map<hash_digest, uint32_t> trans_size_map;
+   std::unordered_map<hash_digest, std::unordered_set<payment_address>*> common_addresses;
 
-   unordered_map<payment_address, uint32_t> address_map;
-   unordered_map<uint32_t, unordered_set<payment_address>*> closure_map;
+   std::unordered_map<payment_address, uint32_t> address_map;
+   std::unordered_map<uint32_t, std::unordered_set<payment_address>*> closure_map;
    
-   unordered_map<uint32_t, unordered_set<uint32_t>*> links;
-   void process_trans_map(unordered_set<payment_address> *addresses);
-   void process_transaction(unordered_set<payment_address> *addresses);
+   std::unordered_map<uint32_t, std::unordered_set<uint32_t>*> links;
+   void process_trans_map(std::unordered_set<payment_address> *addresses);
+   void process_transaction(std::unordered_set<payment_address> *addresses);
    void handle_trans_fetch(      
       const std::error_code& ec,  // Status of operation
       const transaction_type& tx, // Transaction

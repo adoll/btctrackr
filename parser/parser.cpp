@@ -23,7 +23,7 @@
 #include "parser.hpp"
 #include <future>
 #include <limits.h>
-using namespace placeholders;
+using namespace std::placeholders;
 
 // construct a parser, updating it to the current point in the blockchain
 parser::parser(blockchain* chainPtr, bool update) {
@@ -51,9 +51,9 @@ void parser::update(const block_type& blk) {
       // for every input, get the previous transaction hash
       if (!is_coinbase(*trans) && size > 1) {
 	 
-	 unordered_set<payment_address> *addresses = 
-	    new unordered_set<payment_address>();
-	 vector<transaction_input_type> inputs;
+	 std::unordered_set<payment_address> *addresses = 
+	    new std::unordered_set<payment_address>();
+	 std::vector<transaction_input_type> inputs;
   
 	 for (auto input = trans->inputs.begin();
 	      input != trans->inputs.end(); input++) {
@@ -134,7 +134,7 @@ void parser::handle_trans_fetch(
       mtx1.lock();
       uint32_t size = trans_size_map[trans_hash];
       payment_address addr;
-      unordered_set<payment_address> *addresses = common_addresses[trans_hash];
+      std::unordered_set<payment_address> *addresses = common_addresses[trans_hash];
       if (addresses == NULL) {
 	 mtx1.unlock();
 	 return;
@@ -167,12 +167,12 @@ void parser::handle_trans_fetch(
 
 // given a list of addresses in the same transaction, updates the
 // cluster mapping
-void parser::process_transaction(unordered_set<payment_address> *addresses) {
+void parser::process_transaction(std::unordered_set<payment_address> *addresses) {
    mtx.lock();
    uint32_t cluster_no = 0;
     
-   unordered_set<string>* cluster =
-      new unordered_set<string>();
+   std::unordered_set<std::string>* cluster =
+      new std::unordered_set<std::string>();
    
    for (auto address = addresses->begin(); address != addresses->end(); address++)
     cluster->insert(address->encoded());
@@ -183,7 +183,7 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
       uint32_t cur_no = db_get(con, addr->encoded()); //
       // 0 is the empty cluster, so if it isn't 0 merge everything and erase old
       if (cur_no != 0) {
-	    unordered_set<string> *cur_cluster = db_getset(con, cur_no);
+	 std::unordered_set<std::string> *cur_cluster = db_getset(con, cur_no);
 	    // update cluster no, in this way, we always allocate to smallest id
 	    if (cur_no < cluster_no || cluster_no == 0) {
 	        cluster_no = cur_no;
@@ -210,7 +210,7 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
    mtx.unlock();
 }
 
-void parser::process_trans_map(unordered_set<payment_address> *addresses) {
+void parser::process_trans_map(std::unordered_set<payment_address> *addresses) {
    mtx.lock();
    uint32_t cluster_no = 0;
    
@@ -218,15 +218,15 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
      mtx.unlock();
      return;
    }
-   unordered_set<payment_address>* cluster =
-      new unordered_set<payment_address>();
+   std::unordered_set<payment_address>* cluster =
+      new std::unordered_set<payment_address>();
    cluster->insert(addresses->begin(), addresses->end());
-   unordered_map<string, uint32_t> temp_addr;
+   std::unordered_map<std::string, uint32_t> temp_addr;
    // merging all clusters into one cluster
    uint32_t cur_max_size = 0;
    for (auto addr = addresses->begin();
 	addr != addresses->end(); addr++) {
-      string addr_string = addr->encoded();
+      std::string addr_string = addr->encoded();
       uint32_t cur_no = address_map[*addr];//db_get(con, addr_string); //address_map[*addr];
       /*if (cur_no != 0)
 	 temp_addr[addr_string] = cur_no;
@@ -234,7 +234,7 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
 	 temp_addr[addr_string] = UINT_MAX;*/
       // 0 is the empty cluster, so if it isn't 0 merge everything and erase old
       if (cur_no != 0) {
-	 unordered_set<payment_address> *cur_cluster = closure_map[cur_no];
+	 std::unordered_set<payment_address> *cur_cluster = closure_map[cur_no];
 	 // might be null if the cluster was already iterated through
 	 if (cur_cluster) {
 	    // update cluster no, in this way, we always allocate to smallest id
