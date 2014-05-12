@@ -94,6 +94,7 @@ function get_cluster_from_address($address)
 		$return_array["success"] = true;
 		$return_array["address"] = $address;
 		$return_array["cluster_addresses_balances"] = $cluster_addresses_balances;
+		$return_array["cluster_btc"] = $cluster_addresses_balances[$address];
 
 		return $return_array;
 	}
