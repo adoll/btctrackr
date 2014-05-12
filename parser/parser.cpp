@@ -22,20 +22,21 @@
 */
 #include "parser.hpp"
 #include <future>
+#include <limits.h>
 using namespace placeholders;
 
 // construct a parser, updating it to the current point in the blockchain
 parser::parser(blockchain* chainPtr, bool update) {
    chain = chainPtr;
    updater = update;
-   
+   con = db_init_connection();
    if (updater) {
       cur_cluster = 1;
       auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
       chain->fetch_last_height(height_fetched_func); 
    }
    else {
-      con = db_init_connection();
+
       cur_cluster = db_getmax(con);
       cur_cluster++;
    }
@@ -46,22 +47,10 @@ void parser::update(const block_type& blk) {
    for (auto trans = blk.transactions.begin(); trans != blk.transactions.end();
 	trans++) {
       
-      for (auto output = trans->outputs.begin();
-	   output != trans->outputs.end();
-	   output++) {
-	 payment_address address;
-	 if (extract(address, output->script)) {
-	    mtx.lock();
-	    if (address_map[address] == 0) {
-	       address_map[address] = cur_cluster;
-	       cur_cluster++;
-	    }
-	    mtx.unlock();
-	 }
-      }
+      uint32_t size =  trans->inputs.size();	 
       // for every input, get the previous transaction hash
-      if (!is_coinbase(*trans)) {
-	 uint32_t size =  trans->inputs.size();	 
+      if (!is_coinbase(*trans) && size > 1) {
+	 
 	 unordered_set<payment_address> *addresses = 
 	    new unordered_set<payment_address>();
 	 vector<transaction_input_type> inputs;
@@ -232,20 +221,31 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
    unordered_set<payment_address>* cluster =
       new unordered_set<payment_address>();
    cluster->insert(addresses->begin(), addresses->end());
-
+   unordered_map<string, uint32_t> temp_addr;
    // merging all clusters into one cluster
+   uint32_t cur_max_size = 0;
    for (auto addr = addresses->begin();
 	addr != addresses->end(); addr++) {
-      uint32_t cur_no = address_map[*addr];
+      string addr_string = addr->encoded();
+      uint32_t cur_no = address_map[*addr];//db_get(con, addr_string); //address_map[*addr];
+      /*if (cur_no != 0)
+	 temp_addr[addr_string] = cur_no;
+      else 
+	 temp_addr[addr_string] = UINT_MAX;*/
       // 0 is the empty cluster, so if it isn't 0 merge everything and erase old
       if (cur_no != 0) {
 	 unordered_set<payment_address> *cur_cluster = closure_map[cur_no];
-	 // update cluster no, in this way, we always allocate to smallest id
-	 if (cur_no < cluster_no || cluster_no == 0) {
-	    cluster_no = cur_no;
-	 }
-	 if (cur_cluster)
+	 // might be null if the cluster was already iterated through
+	 if (cur_cluster) {
+	    // update cluster no, in this way, we always allocate to smallest id
+	    uint32_t cluster_size = cur_cluster->size();
+	    if (cluster_no == 0 || cluster_size > cur_max_size) {
+	       cur_max_size = cluster_size;
+	       cluster_no = cur_no;
+	    }
 	    cluster->insert(cur_cluster->begin(), cur_cluster->end());
+	    closure_map.erase(cur_no);
+	 }
       }
    }
    if (cluster_no == 0) {
@@ -254,27 +254,32 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
    }
 
    // make sure all addresses in the cluster have the right number
-   for (auto addr1 = cluster->begin();
-	addr1 != cluster->end(); addr1++) {
-      address_map[*addr1] = cluster_no;
+   for (auto addr = cluster->begin();
+	addr != cluster->end(); addr++) {
+      /*string addr_string = addr->encoded();
+      //log_info() << addr_string;
+      uint32_t cluster = temp_addr[addr_string];
+      if (cluster == UINT_MAX) db_insert(con, addr_string, cluster_no);
+      else {
+
+	 if (cluster == 0)
+	    uint32_t cluster = db_get(con, addr_string);
+	 if (cluster != cluster_no)
+	 db_update(con, addr_string, cluster_no); */
+      address_map[*addr] = cluster_no;
    }
    
-   
-   
-   unordered_set<payment_address>* boring = closure_map[cluster_no];
-   //delete boring;
    closure_map[cluster_no] = cluster;
-   
    mtx.unlock();
 }
 
 void parser::close() {
    // update db
    if (updater) {
-      con = db_init_connection();
+      /*
       for (auto i = address_map.begin(); i != address_map.end(); i++) {
 	 db_insert(con, i->first.encoded(), i->second);
-      }
+	 }*/
    }
    delete con;
 }
