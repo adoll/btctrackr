@@ -71,8 +71,7 @@ function get_cluster_from_address($address)
 	else
 	{
 		// First, check if this is a valid address
-		$base_url = "http://btc.blockr.io/api/v1/address/info/";
-		$response_data = file_get_contents($base_url);
+		$response_data = file_get_contents("http://btc.blockr.io/api/v1/address/info/" . $address);
 		$response_json = json_decode($response_data, true);
 		$is_valid = $response_json["data"]["is_valid"];
 
