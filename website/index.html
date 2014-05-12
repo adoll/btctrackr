@@ -146,6 +146,7 @@
       // Check if they entered an invalid address length
       else if(address.length < 27 || address.length > 34)
       {
+        $('#trackdiv').fadeIn(5);
         alert("Please check the address you entered to make sure it is valid.");
         return false;
       }
