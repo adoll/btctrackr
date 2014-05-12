@@ -58,10 +58,10 @@ In this section, we present a brief overview of technical aspect of Bitcoin. We 
 \subsection{Bitcoin}
 Bitcoin is an experimental, decentralized digital currency that uses peer-to-peer technology to operate with no central authority. Bitcoins are sent from one address to another with each user potentially having many, many addresses. Each payment transaction is cryptographically signed by the owner to prevent illegitiment spending and then broadcast across the peer-to-peer network to included in the list of previous transactions (more commonly known as the block chain). Miners are a special type of user that participates in the network. Miners are responsible for verifying the authenticity of an announced transaction based on the previous transactions in the block chain and including that transaction in the next block (update) to the block chain. Once a transaction is included in the block chain, that transaction can not be altered or reversed.\\
 
-In the Bitcoin protocol, transactions are simply a list of addresses as inputs with a corresponding list of transactions as outputs. In addition, the sum of all the input address must be greater than or equal to the sum of all the output address with the difference being claimed by the miner (an optional small fee for publishing the transaction).  Figure \ref{fig:transaction} shows an example transaction where Alice pays Bob 12 BTC. Alice uses two address that are . She then pays Bob the 12 BTC and must pay herself back the additional 3 BTC to a third address (commonly called a charge address).
+In the Bitcoin protocol, transactions are simply a list of addresses as inputs with a corresponding list of transactions as outputs. In addition, the sum of all the input address must be greater than or equal to the sum of all the output address with the difference being claimed by the miner (an optional small fee for publishing the transaction).  Figure \ref{fig:transaction} shows an example transaction where Alice pays Bob 12 BTC. This example also shows Alice paying herself 2.9 Bitcoin into what is commonly called a change address and leaving a transaction fee of 0.1 BTC.
 
 \begin{figure}
-  \includegraphics[width=\linewidth]{transaction.png}
+  \includegraphics[width=\linewidth]{transaction2.png}
   \caption{Example Transaction}
   \label{fig:transaction}
 \end{figure}
