@@ -24,6 +24,7 @@ $result_array = array();
 function get_cluster_from_address($address)
 {
 	$return_array = array();
+	$return_array["success"] = false;
 
 	$mysqli = db_connect();
 	$address = $mysqli->real_escape_string($address);
