@@ -184,7 +184,7 @@
                 if(cluster_address == address)
                   continue;
 
-                $('#cluster_addresses').append("<span><a target='_blank' style='text-decoration:none' href='https://blockchain.info/address/" + cluster_address + "'>" + cluster_address + '|' + cluster_addresses_balances[cluster_address] + "</a></span><br />");
+                $('#cluster_addresses').append("<span><a target='_blank' style='text-decoration:none' href='https://blockchain.info/address/" + cluster_address + "'>" + cluster_address + "</a></span>&nbsp;<span style='color:white'>(฿ " + cluster_addresses_balances[cluster_address] + ")</span><br />");
               }
               //  alert("Address " + address + " is associated with cluster " + cluster_id);
             
