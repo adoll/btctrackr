@@ -11,6 +11,7 @@ define("MAIN_TABLE_NAME", "test");
 $result_array = array();
 
 // This function queries the database to get all of the addresses associated with the cluster_id of the given address
+// If there is no cluster tied to the address (in our database) we query the blockr.io API to return the balance of the address
 // Parameters:
 //	address: the Bitcoin address that we want to query
 // Returns:

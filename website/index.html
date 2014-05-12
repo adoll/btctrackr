@@ -182,7 +182,7 @@
               // Change the values of the dynamic variables
               $('#cluster_numaddrs').html(String(cluster_numaddrs - 1));
               $('#cluster_btc').html(String(cluster_btc));
-              $('#cluster_address').html("<a target='_blank' href='https://blockchain.info/address/" + String(address) + "'>" + String(address) + "</a>");
+              $('#cluster_address').html("<a target='_blank' href='https://blockchain.info/address/" + String(address) + "'>" + String(address) + "</a><span style='color:white'>(" + cluster_addresses_balances[address] + " ฿)</span>");
 
               console.log(cluster_addresses_balances);
               for (var cluster_address in cluster_addresses_balances) 
