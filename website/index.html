@@ -143,6 +143,12 @@
         address = "15iGN5CAkTarcoY85XxwTYWajJyz5hxbYv";
         $('#go-input').val(address);
       }
+      // Check if they entered an invalid address length
+      else if(address.length < 27 || address.length > 34)
+      {
+        alert("Please check the address you entered to make sure it is valid.");
+        return false;
+      }
 
       var url_string =  ROOTPATH + 'btctrackr_ajax.php';
       $.ajax({
