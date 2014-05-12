@@ -20,6 +20,7 @@ $result_array = array();
 //	cluster_addresses_balances: an associative array of all of the addresses in the cluster (including parameter address)
 //					   this maps addresses (keys) to address balances (values)
 //	cluster_btc: the total bitcoin balance of the cluster
+// 	error_message: a descriptive error message upon failure
 function get_cluster_from_address($address)
 {
 	$return_array = array();
@@ -63,6 +64,29 @@ function get_cluster_from_address($address)
 		{
 			$return_array["cluster_btc"] = number_format($cluster_btc, 3);
 		}
+
+		return $return_array;
+	}
+	else
+	{
+		// First, check if this is a valid address
+		$base_url = "http://btc.blockr.io/api/v1/address/info/";
+		$response_data = file_get_contents($base_url);
+		$response_json = json_decode($response_data, true);
+		$is_valid = $response_json["data"]["is_valid"];
+
+		if($is_valid == false)
+		{
+			$return_array["error_message"] = "You have entered an invalid address.";
+			return $return_array;
+		}
+
+		// This address is a valid address not in our database, so query the blockr.io API for address balance information
+		$cluster_addresses = array($address);
+		$cluster_addresses_balances = get_balances_from_addresses($cluster_addresses);
+		$return_array["success"] = true;
+		$return_array["address"] = $address;
+		$return_array["cluster_addresses_balances"] = $cluster_addresses_balances;
 
 		return $return_array;
 	}
