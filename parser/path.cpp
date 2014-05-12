@@ -72,9 +72,9 @@ int main(int argc, char** argv)
    uint32_t dst_cluster_no = db_get(con, dst);
    std::unordered_map<hash_digest, std::string> addresses;
    std::unordered_set<std::string>* src_cluster = db_getset(con, src_cluster_no);
-   if (src_cluster->size() == 0) src_cluster.insert(src);
+   if (src_cluster->size() == 0) src_cluster->insert(src);
    std::unordered_set<std::string>* dst_cluster = db_getset(con, dst_cluster_no);
-   if (dst_cluster->size() == 0) dst_cluster.insert(dst);
+   if (dst_cluster->size() == 0) dst_cluster->insert(dst);
    std::unordered_set<hash_digest> src_out_trans;
 
    for (auto addr = src_cluster->begin(); addr != src_cluster->end(); addr++) {
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 	 //log_info() << row.spend.hash;
 	 if (row.spend.hash != null_hash) {
 	    src_out_trans.insert(row.spend.hash);
-	    addresses[row.spend.hash] = addr;
+	    addresses[row.spend.hash] = *addr;
 	 }
       }
    }
@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 	 BITCOIN_ASSERT(value >= 0);
 	 if (src_out_trans.find(row.output.hash) != src_out_trans.end()) {
 	    log_info() << src_cluster_no << "|" << dst_cluster_no << "|" 
-		       << addr << "|" << addresses[row.output.hash] << "|" << row.output.hash;
+		       << *addr << "|" << addresses[row.output.hash] << "|" << row.output.hash;
 	    log_info() << row.output.hash;
 	    break;
 	 }
