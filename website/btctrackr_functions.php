@@ -73,7 +73,7 @@ function get_cluster_from_address($address)
 		$response_data = file_get_contents("http://btc.blockr.io/api/v1/address/info/" . $address);
 		$response_json = json_decode($response_data, true);
 		$is_valid = $response_json["data"]["is_valid"];
-		$address_balance = floatval($reponse_json["data"]["balance"]));
+		$address_balance = floatval($reponse_json["data"]["balance"]);
 
 		if($is_valid == false)
 		{
