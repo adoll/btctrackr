@@ -36,7 +36,7 @@
 %make title bold and 14 pt font (Latex default is non-bold, 16 pt)
 \title{\bf BTCTrackr}
 \author{Aaron Doll, Shaheed Chagan, Michael Kranch, and Vaidhyanath Murti\\
-\textit{\{adoll, schagani, mkranch, and vmurt\}cs.princeton.edu}}
+\textit{\{adoll, schagani, mkranch, and vmurt\} @cs.princeton.edu}}
 \date{COS 597B Privacy \\ 14 May 2014}
 
 \begin{document}
@@ -47,7 +47,7 @@
 \thispagestyle{empty}
 
 \begin{abstract}
-Bitcoin is the mostly widely known and accepted of a rapid growing set of online, virtual crypto-currency. Many users are attracted to these new crypto currency because of their separation from any sovereignty or single authority. They are also adopting crypto-currencies because they provide pseudonymity or the ability to use as currency without any direct link to a real world identity. Because of this psuedonymity, many users believe they can use freely without risk of tracking or tracing the coins back to their real identity. Due to the public nature of the bitcoin transaction ledge, an individual's spending habits are actually more easily tracked by non sophisticated advisory than more commonly accepted online payment methods like credit cards. Continuing on the work presented in "A Fistful of Bitcoins", this paper revisits the heuristics for identifying a individuals closure, or the subset of link Bitcoin. We then implement these heuristics in a real-time application made open to the public to allow individuals to avoid linking transactions. Finally, we discuss several other related project and future areas for improvement.
+Bitcoin is the mostly widely known and accepted of a rapid growing set of online, virtual crypto-currency. Many users are attracted to these new crypto-currencies because they are decentralized and separated from any sovereignty or authority. They are also adopting crypto-currencies because they provide pseudonymity - an individual can make online transactions with the virtual currency without any direct link to their real world identity. Because of this psuedonymity, many users believe they can use freely without risk of their expenditures being traced back to their real identity; however, several recent papers on bitcoin transactions increase demonstrate this belief is false. An individual's spending habits are actually more easily tracked by non sophisticated advisory due to the public nature of the bitcoin transaction ledge than more commonly accepted online payment methods like credit cards. Continuing on the work presented in "A Fistful of Bitcoins", this paper revisits the heuristics for identifying a individuals closure, or the subset of link Bitcoin. We then implement these heuristics in a real-time application made open to the public to allow individuals to avoid linking transactions. Finally, we discuss several other related project and future areas for improvement.
 
 \end{abstract}
 
@@ -56,10 +56,22 @@ Bitcoin is the mostly widely known and accepted of a rapid growing set of online
 In this section, we present a brief overview of technical aspect of Bitcoin. We then several known methods of linking Bitcoin addresses presented in previous work. Finally, we discuss issue with this methods and the motivation for a real-time heuristic utility. 
 
 \subsection{Bitcoin}
-Bitcoin is an experimental, decentralized digital currency that uses peer-to-peer technology to operate with no central authority. Bitcoins are sent from one address to another with each user potentially having many, many addresses. Each payment transaction is broadcast to the network and then included in the blockchain, or the list of all previous transactions) so that the included bitcoins cannot be spent twice. 
-Talk about transaction ledge
+Bitcoin is an experimental, decentralized digital currency that uses peer-to-peer technology to operate with no central authority. Bitcoins are sent from one address to another with each user potentially having many, many addresses. Each payment transaction is cryptographically signed by the owner to prevent illegitiment spending and then broadcast across the peer-to-peer network to included in the list of previous transactions (more commonly known as the block chain). Miners are a special type of user that participates in the network. Miners are responsible for verifying the authenticity of an announced transaction based on the previous transactions in the block chain and including that transaction in the next block (update) to the block chain. Once a transaction is included in the block chain, that transaction can not be altered or reversed.\\
 
-\subsection{Current Clustering Heuristics}
+In the Bitcoin protocol, transactions are simply a list of addresses as inputs with a corresponding list of transactions as outputs. In addition, the sum of all the input address must be greater than or equal to the sum of all the output address with the difference being claimed by the miner (an optional small fee for publishing the transaction).  Figure \ref{fig:transaction} shows an example transaction where Alice pays Bob 12 BTC. Alice uses two address that are . She then pays Bob the 12 BTC and must pay herself back the additional 3 BTC to a third address (commonly called a charge address).
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{transaction.png}
+  \caption{Example Transaction}
+  \label{fig:transaction}
+\end{figure}
+
+\subsection{Address Clustering}
+
+.For example, Alice might want to payindividual or entity generally controls many addresses as opposed to a traditional system where a user has a single account
+
+Te inputs As suggested that transactions In this paper, we refer to the term clustering to mean the group (subset) of Bitcoin address that are controlled by the same individual. Furthermore, we define control as the individual in charge of spending the Bitcoins.
+
 Heuristic one - all inputs below to same user.
 Dicuss change address - 
 
