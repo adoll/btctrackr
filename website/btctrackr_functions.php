@@ -130,7 +130,7 @@ function get_balances_from_addresses($addresses)
 
 	$base_url = "http://btc.blockr.io/api/v1/address/balance/";
 
-	$parallel_curl = new ParallelCurl(100);
+	$parallel_curl = new ParallelCurl(10000);
 
 	$num_processed = 0;
 
