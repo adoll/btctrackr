@@ -49,17 +49,17 @@
               <!--<h1 class="cover-heading" style="color:white">Enter an address:</h1>-->
               <span style="font-size:18px;"> Enter two addresses to find their shortest connecting path. </span>
 
-              <input id="go-input" style="margin-top:3px; margin-bottom:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address" placeholder="3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" autocomplete="off" required>
+              <input id="path_address1" style="margin-top:3px; margin-bottom:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address1" placeholder="3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" autocomplete="off" required>
               <br />
               <img src="./img/down_arrow.png" style="width:33px; height:40px"> &nbsp; &nbsp;                        
               <img src="./img/down_arrow.png" style="width:33px; height:40px"> &nbsp; &nbsp;
               <img src="./img/down_arrow.png" style="width:33px; height:40px">
               <br />
-              <input id="go-input" style="margin-top:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address" placeholder="15iGN5CAkTarcoY85XxwTYWajJyz5hxbYv" autocomplete="off" required>
+              <input id="path_address2" style="margin-top:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address2" placeholder="15iGN5CAkTarcoY85XxwTYWajJyz5hxbYv" autocomplete="off" required>
               <!-- Try this address on bitiodine.net. It fails spectacularly. -->
 
               <br /><br />
-              <button type="button" id="go-button" style="margin-top: 0px; height: 67px; width: 200px; vertical-align: bottom; font-size: 30px;" class="btn btn-large btn-warning">Shortest Path</button>
+              <button type="button" id="path-button" style="margin-top: 0px; height: 67px; width: 200px; vertical-align: bottom; font-size: 30px;" class="btn btn-large btn-warning">Shortest Path</button>
             </div>
 
             <div id="clusterdiv" style="display:none">
@@ -185,7 +185,6 @@
               $('#cluster_btc').html(String(cluster_btc));
               $('#cluster_address').html("<a target='_blank' href='https://blockchain.info/address/" + String(address) + "'>" + String(address) + "</a>&nbsp;<span style='color:white'>(" + cluster_addresses_balances[address] + " ฿)</span>");
 
-              console.log(cluster_addresses_balances);
               for (var cluster_address in cluster_addresses_balances) 
               {
                 // address is the name of the main address that was tracked
@@ -203,6 +202,89 @@
           {
             console.log(error);
             $('#trackdiv').fadeIn(1000);
+            alert("Trouble connecting to server!");
+          }
+        }
+      });
+    });
+
+    $('#path-button').click(function() 
+    {
+      $('#pathdiv').fadeOut(5);
+      var address1 = $('#path_address1').val();
+      var address2 = $('#path_address2').val();
+
+      address1 = address1.trim();
+      address2 = address2.trim();
+
+      // If they didn't input an address, use the address that doesn't work on Bitiodine
+      if(address1.length == 0 || address2.length == 0)
+      {
+        $('#pathdiv').fadeIn(5);
+        alert("Please check the addresses you entered to make sure they are valid.");
+        return false;
+      }
+      // Check if they entered an invalid address length
+      else if(address1.length < 27 || address1.length > 34 || address2.length < 27 || address2.length > 34)
+      {
+        $('#pathdiv').fadeIn(5);
+        alert("Please check the address you entered to make sure it is valid.");
+        return false;
+      }
+
+      var url_string =  ROOTPATH + 'btctrackr_ajax.php';
+      $.ajax({
+        url: url_string,  //Server script to process data
+        type: 'GET',
+        data: { 
+          'address1': address1,
+          'address2': address2,
+          'function_name': 'get_path_between'
+        },
+        //Ajax events
+        success: function(result)
+        {
+          try
+          {
+            response = jQuery.parseJSON(result);
+            if(response.status === "error")
+            {               
+              $('#pathdiv').fadeIn(1000);
+              alert(response.message);
+            }
+            else if(response.status == "success")
+            {
+              var response_data = response.response_data;
+              console.log(response_data);
+              /*
+              var address = response_data.address;
+              var cluster_id = response_data.cluster_id;
+              var cluster_addresses_balances = response_data.cluster_addresses_balances;
+              var cluster_btc = response_data.cluster_btc;
+              var cluster_numaddrs = Object.keys(cluster_addresses_balances).length;
+
+              // Change the values of the dynamic variables
+              $('#cluster_numaddrs').html(String(cluster_numaddrs - 1));
+              $('#cluster_btc').html(String(cluster_btc));
+              $('#cluster_address').html("<a target='_blank' href='https://blockchain.info/address/" + String(address) + "'>" + String(address) + "</a>&nbsp;<span style='color:white'>(" + cluster_addresses_balances[address] + " ฿)</span>");
+
+              for (var cluster_address in cluster_addresses_balances) 
+              {
+                // address is the name of the main address that was tracked
+                if(cluster_address == address)
+                  continue;
+
+                $('#cluster_addresses').append("<span><a target='_blank' style='text-decoration:none' href='https://blockchain.info/address/" + cluster_address + "'>" + cluster_address + "</a></span>&nbsp;&nbsp;<span style='color:white'>(" + cluster_addresses_balances[cluster_address] + " ฿)</span><br />");
+              }
+              //  alert("Address " + address + " is associated with cluster " + cluster_id);
+            
+              $('#clusterdiv').fadeIn(1000);*/
+            }
+          }
+          catch(error)
+          {
+            console.log(error);
+            $('#pathdiv').fadeIn(1000);
             alert("Trouble connecting to server!");
           }
         }
