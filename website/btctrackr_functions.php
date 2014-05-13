@@ -71,7 +71,7 @@ function get_cluster_from_address($address)
 	else
 	{
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, "http://btc.blockr.io/api/v1/address/info/" . $address;
+		curl_setopt($ch, CURLOPT_URL, "http://btc.blockr.io/api/v1/address/info/" . $address);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$response_data = curl_exec($ch);
 		$response_json = json_decode($response_data, true);
