@@ -208,8 +208,7 @@ void parser::process_transaction(std::set<std::string> *addresses) {
 
     for (auto addr = cluster.begin();
             addr != cluster.end(); addr++) {
-       // db_insert(con, *addr, cluster_no);
-       std::cout << *addr << "," << cluster_no << std::endl;
+        db_insert(con, *addr, cluster_no);
     }
 
     mtx.unlock();
@@ -261,6 +260,6 @@ void parser::close() {
         for (auto i = closure_map.begin(); i != closure_map.end(); i++) {
             //db_insert(con, i->first, closure_map[parent_pmap[i->first]]);
             std::cout << i->first << "," << closure_map[parent_pmap[i->first]] << std::endl;          }
-    }
+    } 
     delete con; 
 }
