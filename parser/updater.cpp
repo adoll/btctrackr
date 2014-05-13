@@ -36,7 +36,7 @@ int main()
   {
   ec_promise.set_value(ec);
   };
-  ldb_chain.start("blockchain", blockchain_started);
+  ldb_chain.start("practiceBlockchaind", blockchain_started);
   std::error_code ec = ec_promise.get_future().get();
   if (ec)
   {

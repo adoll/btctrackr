@@ -70,8 +70,8 @@ void parser::update(const block_type& blk) {
                 }
             } // end input loop
             if (size == 0) {
-                if (updater) process_trans_map(addresses);
-                //if (updater) process_transaction(addresses); 
+                //if (updater) process_trans_map(addresses);
+                if (updater) process_transaction(addresses); 
                 else process_transaction(addresses);
                 delete addresses;
             }
@@ -156,8 +156,8 @@ void parser::handle_trans_fetch(
         }
         // we have all the addresses we need, process it
         if (addresses->size() == trans_size_map[trans_hash]) {
-            if (updater) process_trans_map(addresses);
-            //if (updater) process_transaction(addresses);
+            //if (updater) process_trans_map(addresses);
+            if (updater) process_transaction(addresses);
             else process_transaction(addresses);
             trans_size_map.erase(trans_hash);
             common_addresses.erase(trans_hash);
