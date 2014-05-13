@@ -231,7 +231,7 @@ function get_path_between($address1, $address2)
 		return $return_array;
 	}
 
-	$output_string = $output[1];
+	$output_string = $output[0];
 	$output_tokens = explode("|", $output_string);
 
 	$source_cluster_id = $output_tokens[0];
