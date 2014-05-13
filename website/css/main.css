@@ -54,7 +54,7 @@ input, textarea, button, span {
 
 }
 
-input#go-input{
+input.pretty{
 
   border-radius:4px;
   color:white;
