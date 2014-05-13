@@ -22,9 +22,8 @@
    */
 #include "parser.hpp"
 #include <future>
-#include <limits.h>
-#include <algorithm>
-#include <boost/assign/list_of.hpp>
+#include <iostream>
+#include <fstream>
 using namespace std::placeholders;
 
 typedef std::map<std::string,std::size_t> rank_t; // => order on int
@@ -36,6 +35,9 @@ parent_t parent_map;
 Rank rank_pmap(rank_map);
 Parent parent_pmap(parent_map);
 boost::disjoint_sets<Rank, Parent> dsets(rank_pmap, parent_pmap);
+uint32_t block_counter = 10000;
+uint32_t top;
+void update_disjoint();
 
 // construct a parser, updating it to the current point in the blockchain
 parser::parser(blockchain* chainPtr, bool update) {
@@ -43,15 +45,19 @@ parser::parser(blockchain* chainPtr, bool update) {
     updater = update;
     con = db_init_connection();
     if (updater) {
-        cur_cluster = 1;
+       //cur_cluster = db_getmax(con);
+       //cur_cluster++;
+       //update_disjoint();
+       cur_cluster = 1;
         auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
         chain->fetch_last_height(height_fetched_func); 
     }
     else {
-        cur_cluster = db_getmax(con);
-        cur_cluster++;
+       cur_cluster = db_getmax(con);
+       cur_cluster++;
     }
 }
+
 
 void parser::update(const block_type& blk) {
    // iterate through all transactions of the block
@@ -104,6 +110,11 @@ void parser::update(const block_type& blk) {
 
         } // end coinbase if
     }
+   auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
+   mtx2.lock();
+   block_counter++;
+   mtx2.unlock();
+   fetch_block(*chain, block_counter, handle);
 }
 
 void parser::height_fetched(const std::error_code& ec, size_t last_height)
@@ -118,8 +129,8 @@ void parser::height_fetched(const std::error_code& ec, size_t last_height)
     assert(chain);
     auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
     // Begin fetching the block header.
-    for (int i = 201001; i <= 210000; i++) {
-        fetch_block(*chain, i, handle);
+    for (int i = 0; i <= 10000; i++) {
+       fetch_block(*chain, i, handle);
     }
 }
 
