@@ -25,18 +25,30 @@
 #include <limits.h>
 using namespace std::placeholders;
 
+
+typedef std::map<std::string,std::size_t> rank_t; // => order on int
+typedef std::map<std::string,std::string> parent_t;
+typedef boost::associative_property_map<rank_t> Rank;
+typedef boost::associative_property_map<parent_t> Parent;
+rank_t rank_map;
+parent_t parent_map;
+Rank rank_pmap(rank_map);
+Parent parent_pmap(parent_map);
+boost::disjoint_sets<Rank, Parent> dsets(rank_pmap, parent_pmap);
+
 // construct a parser, updating it to the current point in the blockchain
 parser::parser(blockchain* chainPtr, bool update) {
    chain = chainPtr;
    updater = update;
    con = db_init_connection();
+   
+   
    if (updater) {
       cur_cluster = 1;
       auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
       chain->fetch_last_height(height_fetched_func); 
    }
    else {
-
       cur_cluster = db_getmax(con);
       cur_cluster++;
    }
@@ -51,8 +63,8 @@ void parser::update(const block_type& blk) {
       // for every input, get the previous transaction hash
       if (!is_coinbase(*trans) && size > 1) {
 	 
-	 std::unordered_set<payment_address> *addresses = 
-	    new std::unordered_set<payment_address>();
+	 std::set<std::string> *addresses = 
+	    new std::set<std::string>();
 	 std::vector<transaction_input_type> inputs;
   
 	 for (auto input = trans->inputs.begin();
@@ -62,8 +74,8 @@ void parser::update(const block_type& blk) {
 	    if (extract(addr, input->script)) {
 	       size--;
 	       // if address wasn't already inserted
-	       if (addresses->find(addr) == addresses->end()) {  
-		  addresses->insert(addr);
+	       if (addresses->find(addr.encoded()) == addresses->end()) {  
+		  addresses->insert(addr.encoded());
 	       }
 	    }
 	    else {
@@ -71,8 +83,8 @@ void parser::update(const block_type& blk) {
 	    }
 	 } // end input loop
 	 if (size == 0) {
-	    if (updater) process_trans_map(addresses);
-	    else process_transaction(addresses);
+	    if (updater) process_trans(addresses);
+	    //else process_transaction(addresses);
 	    delete addresses;
 	 }
 	 else {
@@ -134,15 +146,15 @@ void parser::handle_trans_fetch(
       mtx1.lock();
       uint32_t size = trans_size_map[trans_hash];
       payment_address addr;
-      std::unordered_set<payment_address> *addresses = common_addresses[trans_hash];
+      std::set<std::string> *addresses = common_addresses[trans_hash];
       if (addresses == NULL) {
 	 mtx1.unlock();
 	 return;
       }
       if (extract(addr, (tx.outputs.begin() + index)->script)) {
 	 // if address wasn't already inserted
-	 if (addresses->find(addr) == addresses->end()) {
-	    addresses->insert(addr);
+	 if (addresses->find(addr.encoded()) == addresses->end()) {
+	    addresses->insert(addr.encoded());
 	 }
 	 // check for case when addresses are used as inputs twice
 	 else {
@@ -156,8 +168,8 @@ void parser::handle_trans_fetch(
       }
       // we have all the addresses we need, process it
       if (addresses->size() == trans_size_map[trans_hash]) {
-	 if (updater) process_trans_map(addresses);
-	 else process_transaction(addresses);
+	 if (updater) process_trans(addresses);
+	 //else process_transaction(addresses);
 	 trans_size_map.erase(trans_hash);
 	 common_addresses.erase(trans_hash);
       }
@@ -167,7 +179,7 @@ void parser::handle_trans_fetch(
 
 // given a list of addresses in the same transaction, updates the
 // cluster mapping
-void parser::process_transaction(std::unordered_set<payment_address> *addresses) {
+/*void parser::process_transaction(std::unordered_set<payment_address> *addresses) {
    mtx.lock();
    uint32_t cluster_no = 0;
     
@@ -208,78 +220,34 @@ void parser::process_transaction(std::unordered_set<payment_address> *addresses)
     }
    
    mtx.unlock();
-}
+   }*/
 
-void parser::process_trans_map(std::unordered_set<payment_address> *addresses) {
-   mtx.lock();
-   uint32_t cluster_no = 0;
-   
-   if (addresses == NULL || addresses->size() == 0) {
-     mtx.unlock();
-     return;
+void parser::process_trans(std::set<std::string> *addresses) {
+   // shouldn't happen
+   if (addresses == NULL || addresses->size() < 2) {
+      return;
    }
-   std::unordered_set<payment_address>* cluster =
-      new std::unordered_set<payment_address>();
-   cluster->insert(addresses->begin(), addresses->end());
-   std::unordered_map<std::string, uint32_t> temp_addr;
-   // merging all clusters into one cluster
-   uint32_t cur_max_size = 0;
-   for (auto addr = addresses->begin();
-	addr != addresses->end(); addr++) {
-      std::string addr_string = addr->encoded();
-      uint32_t cur_no = address_map[*addr];//db_get(con, addr_string); //address_map[*addr];
-      /*if (cur_no != 0)
-	 temp_addr[addr_string] = cur_no;
-      else 
-	 temp_addr[addr_string] = UINT_MAX;*/
-      // 0 is the empty cluster, so if it isn't 0 merge everything and erase old
-      if (cur_no != 0) {
-	 std::unordered_set<payment_address> *cur_cluster = closure_map[cur_no];
-	 // might be null if the cluster was already iterated through
-	 if (cur_cluster) {
-	    // update cluster no, in this way, we always allocate to smallest id
-	    uint32_t cluster_size = cur_cluster->size();
-	    if (cluster_no == 0 || cluster_size > cur_max_size) {
-	       cur_max_size = cluster_size;
-	       cluster_no = cur_no;
-	    }
-	    cluster->insert(cur_cluster->begin(), cur_cluster->end());
-	    closure_map.erase(cur_no);
-	 }
+   
+   std::string root = *addresses->begin();
+   if (all_addresses.find(root) != all_addresses.end()) {
+      root = dsets.find_set(root);
+   }
+   else {
+      dsets.make_set(root);
+   }
+   for (auto addr = std::next(addresses->begin()); addr != addresses->end();
+	addr++) {
+      if (all_addresses.find(*addr) == all_addresses.end()) {
+	 dsets.make_set(*addr);
       }
+      dsets.union_set(root, *addr);
    }
-   if (cluster_no == 0) {
-      cluster_no = cur_cluster;
-      cur_cluster++;
-   }
-
-   // make sure all addresses in the cluster have the right number
-   for (auto addr = cluster->begin();
-	addr != cluster->end(); addr++) {
-      /*string addr_string = addr->encoded();
-      //log_info() << addr_string;
-      uint32_t cluster = temp_addr[addr_string];
-      if (cluster == UINT_MAX) db_insert(con, addr_string, cluster_no);
-      else {
-
-	 if (cluster == 0)
-	    uint32_t cluster = db_get(con, addr_string);
-	 if (cluster != cluster_no)
-	 db_update(con, addr_string, cluster_no); */
-      address_map[*addr] = cluster_no;
-   }
-   
-   closure_map[cluster_no] = cluster;
-   mtx.unlock();
 }
 
 void parser::close() {
    // update db
    if (updater) {
-      
-      for (auto i = address_map.begin(); i != address_map.end(); i++) {
-	 db_insert(con, i->first.encoded(), i->second);
-      }
+      ;
    }
    delete con;
 }
