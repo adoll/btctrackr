@@ -9,5 +9,4 @@ $addr2 = "1DUDsfc23Dv9sPMEk5RsrtfzCw5ofi5sVW";
 
 echo exec("/home/ubuntu/btctrackr/parser/path $addr1 $addr2");
 
-
 ?>
