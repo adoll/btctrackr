@@ -13,6 +13,11 @@ $addr2 = $_GET["addr2"];
 chdir("/home/ubuntu/btctrackr/parser");
 exec("sudo ./path $addr1 $addr2", $output);
 
+if(count($output) == 0)
+{
+	// The call to path failed -> chances are these addresses are invalid
+}
+
 var_dump($output);
 
 ?>

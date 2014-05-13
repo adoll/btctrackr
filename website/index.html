@@ -39,7 +39,7 @@
               <img src="./img/logo_text_orange.png"><br />
               <!--<h1 class="cover-heading" style="color:white">Enter an address:</h1>-->
               <span style="font-size:18px;"> Enter an address to find out which other addresses likely belong to the same person. </span>
-              <input id="go-input" style="margin-top:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address" placeholder="15iGN5CAkTarcoY85XxwTYWajJyz5hxbYv" autocomplete="off" required>
+              <input id="track-address" class="pretty" style="margin-top:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address" placeholder="15iGN5CAkTarcoY85XxwTYWajJyz5hxbYv" autocomplete="off" required>
               <!-- Try this address on bitiodine.net. It fails spectacularly. -->
               <button type="button" id="go-button" style="margin-top: 0px; height: 67px; width: 125px; vertical-align: bottom; font-size: 30px;" class="btn btn-large btn-warning">Track</button>
             </div>
@@ -49,13 +49,13 @@
               <!--<h1 class="cover-heading" style="color:white">Enter an address:</h1>-->
               <span style="font-size:18px;"> Enter two addresses to find their shortest connecting path. </span>
 
-              <input id="path_address1" style="margin-top:3px; margin-bottom:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address1" placeholder="3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" autocomplete="off" required>
+              <input id="path_address1" class="pretty" style="margin-top:3px; margin-bottom:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address1" placeholder="3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" autocomplete="off" required>
               <br />
               <img src="./img/down_arrow.png" style="width:33px; height:40px"> &nbsp; &nbsp;                        
               <img src="./img/down_arrow.png" style="width:33px; height:40px"> &nbsp; &nbsp;
               <img src="./img/down_arrow.png" style="width:33px; height:40px">
               <br />
-              <input id="path_address2" style="margin-top:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address2" placeholder="15iGN5CAkTarcoY85XxwTYWajJyz5hxbYv" autocomplete="off" required>
+              <input id="path_address2" class="pretty" style="margin-top:3px; background: rgba(255,255,255, 0.4); outline: none; padding-left: 12px; width:520px" name="address2" placeholder="15iGN5CAkTarcoY85XxwTYWajJyz5hxbYv" autocomplete="off" required>
               <!-- Try this address on bitiodine.net. It fails spectacularly. -->
 
               <br /><br />
@@ -135,14 +135,14 @@
     $('#go-button').click(function() 
     {
       $('#trackdiv').fadeOut(5);
-      var address = $('#go-input').val();
+      var address = $('#track-address').val();
       address = address.trim();
 
       // If they didn't input an address, use the address that doesn't work on Bitiodine
       if(address.length == 0)
       {
         address = "15iGN5CAkTarcoY85XxwTYWajJyz5hxbYv";
-        $('#go-input').val(address);
+        $('#track-address').val(address);
       }
       // Check if they entered an invalid address length
       else if(address.length < 27 || address.length > 34)
@@ -255,7 +255,6 @@
             else if(response.status == "success")
             {
               var response_data = response.response_data;
-              console.log(response_data);
               /*
               var address = response_data.address;
               var cluster_id = response_data.cluster_id;
