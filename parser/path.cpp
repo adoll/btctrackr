@@ -99,7 +99,28 @@ int main(int argc, char** argv)
 	 }
       }
    }
-   
+    if (src_cluster_no == dst_cluster_no) {
+        payment_address dst_addr;
+        if (!dst_addr.set_encoded(dst))
+        {
+	        log_fatal() << "Invalid address";
+	        return 1;
+        }
+        
+        blockchain::history_list history = get_history(dst_addr);
+      for (const auto& row: history)
+      {
+        uint32_t value = row.value;
+	    BITCOIN_ASSERT(value >= 0);
+       // log_info() << row.spend.hash;
+        if (src_out_trans.find(row.spend.hash) != src_out_trans.end()) {
+	        log_info() << src_cluster_no << "|" << dst_cluster_no << "|" 
+		       << dst << "|" << addresses[row.spend.hash] << "|" << row.spend.hash;
+	        log_info() << row.spend.hash;
+	        break;
+	    }
+      }
+     } else {
    for (auto addr = dst_cluster->begin(); addr != dst_cluster->end(); addr++) {
    
       payment_address dst_addr;
@@ -114,16 +135,16 @@ int main(int argc, char** argv)
       {
 	 uint32_t value = row.value;
 	 BITCOIN_ASSERT(value >= 0);
-	 if (src_out_trans.find(row.output.hash) != src_out_trans.end()) {
-	    log_info() << src_cluster_no << "|" << dst_cluster_no << "|" 
+	    if (src_out_trans.find(row.output.hash) != src_out_trans.end()) {
+	        log_info() << src_cluster_no << "|" << dst_cluster_no << "|" 
 		       << *addr << "|" << addresses[row.output.hash] << "|" << row.output.hash;
-	    log_info() << row.output.hash;
-	    break;
-	 }
+	        log_info() << row.output.hash;
+	        break;
+	    }
       }
       
    }
-
+    }
    pool.shutdown();
    pool.join();
    chain.stop();

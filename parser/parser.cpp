@@ -213,12 +213,13 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
         return;
     }
     unordered_set<payment_address>* cluster = new unordered_set<payment_address>();
-    cluster->insert(addresses->begin(), addresses->end());
+   // cluster->insert(addresses->begin(), addresses->end());
     //unordered_map<string, uint32_t> temp_addr;
     // merging all clusters into one cluster
     uint32_t cur_max_size = 0;
     for (auto addr = addresses->begin();
             addr != addresses->end(); addr++) {
+        cluster->insert(*addr);
         string addr_string = addr->encoded();
         uint32_t cur_no = address_map[*addr];//db_get(con, addr_string); //address_map[*addr];
         /*if (cur_no != 0)
