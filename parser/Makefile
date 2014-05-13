@@ -15,7 +15,7 @@ parser.o: parser.cpp
 updater.o: updater.cpp
 	$(CXX) -o $@ -c -I/usr/local/include/cppconn -Wl,-Bdynamic $< $(CXXFLAGS)
 
-updater: updater.o parser.o
+updater: updater.o parser.o db.o
 	$(CXX) -o $@ $< parser.o db.o $(LIBS) -lmysqlcppconn
 
 fullnode.o: fullnode.cpp

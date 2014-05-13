@@ -4,8 +4,8 @@ EXPECTED_ARGS=0
 E_BADARGS=65
 MYSQL=`which mysql`
  
-Q1="USE test;"
-Q2="DROP TABLE test;"
+Q1="USE production;"
+Q2="DROP TABLE production;"
 SQL="${Q1}${Q2};"
  
 if [ $# -ne $EXPECTED_ARGS ]

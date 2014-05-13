@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 {
    if (argc != 3)
    {
-      log_info() << "Usage: balance ADDRESS";
+      log_info() << "Usage: balance ADDRESS1 ADDRESS2";
       return -1;
    }
    sql::Connection *con = db_init_connection();
