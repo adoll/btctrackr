@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 {
    if (argc != 3)
    {
-      log_info() << "Usage: balance ADDRESS1 ADDRESS2";
+      log_info() << "Usage: path ADDRESS1 ADDRESS2";
       return -1;
    }
    sql::Connection *con = db_init_connection();
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
       {
 	 ec_promise.set_value(ec);
       };
-   chain.start("blockchain", blockchain_started);
+   chain.start("practiceBlockchaind", blockchain_started);
    std::error_code ec = ec_promise.get_future().get();
    if (ec)
    {

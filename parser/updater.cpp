@@ -22,7 +22,7 @@
 */
 #include "parser.hpp"
 #include <future>
-using namespace placeholders;
+using namespace std::placeholders;
 
 int main()
   {
@@ -30,7 +30,7 @@ int main()
   threadpool pool(1);
   // Create a LevelDB blockchain.
   leveldb_blockchain ldb_chain(pool);
-  promise<error_code> ec_promise;
+  std::promise<std::error_code> ec_promise;
   auto blockchain_started =
   [&ec_promise](const std::error_code& ec)
   {
