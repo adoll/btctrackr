@@ -19,7 +19,7 @@
  */
 /*
    Display info from the last block in our blockchain at "./blockchain/"
- */
+   */
 #include "parser.hpp"
 #include <future>
 #include <limits.h>
@@ -110,7 +110,6 @@ void parser::height_fetched(const std::error_code& ec, size_t last_height)
     // Begin fetching the block header.
     for (int i = 150000; i <= 151000; i++) {
         fetch_block(*chain, i, handle);
-	std::cerr << i << std::endl;
     }
 }
 
@@ -216,7 +215,7 @@ void parser::process_trans_map(unordered_set<payment_address> *addresses) {
     }
     unordered_set<payment_address>* cluster = new unordered_set<payment_address>();
     cluster->insert(addresses->begin(), addresses->end());
-//unordered_map<string, uint32_t> temp_addr;
+    //unordered_map<string, uint32_t> temp_addr;
     // merging all clusters into one cluster
     uint32_t cur_max_size = 0;
     for (auto addr = addresses->begin();
