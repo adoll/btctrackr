@@ -265,7 +265,8 @@ void parser::close() {
       log_info() << all_addresses.size();
       log_info() << dsets.count_sets(all_addresses.begin(), all_addresses.end());
       for (auto i = closure_map.begin(); i != closure_map.end(); i++) {
-	 db_insert(con, i->first, closure_map[parent_pmap[i->first]]);
+	    //db_insert(con, i->first, closure_map[parent_pmap[i->first]]);
+          std::cout << i->first << "," << closure_map[parent_pmap[i->first]] << std::endl;
       }
    }
    delete con;
