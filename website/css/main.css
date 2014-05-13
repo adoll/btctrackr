@@ -92,6 +92,12 @@ div#clusterdiv a{
   color:#f0ad4e;
 }
 
+div#pathresultsdiv a{
+  text-decoration: none;
+  color:#f0ad4e;
+}
+
+
 @font-face {
   font-family: 'Lato-Hairline';
   src: local('Lato Hairline'), local('Lato-Hairline'), url(../fonts/lato/Lato-Hai.ttf) format("truetype");
