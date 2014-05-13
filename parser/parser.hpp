@@ -52,7 +52,7 @@ private:
    std::unordered_map<hash_digest, uint32_t> trans_size_map;
    std::unordered_map<hash_digest, std::set<std::string>*> common_addresses;
    std::unordered_set<std::string> all_addresses;
-
+   std::unordered_map<std::string, uint32_t> closure_map;
    void process_trans(std::set<std::string> *addresses); 
 //void process_transaction(std::unordered_set<payment_address> *addresses);
    void handle_trans_fetch(      

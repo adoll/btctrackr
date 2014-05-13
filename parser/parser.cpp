@@ -40,8 +40,7 @@ boost::disjoint_sets<Rank, Parent> dsets(rank_pmap, parent_pmap);
 parser::parser(blockchain* chainPtr, bool update) {
    chain = chainPtr;
    updater = update;
-   con = db_init_connection();
-   
+   con = db_init_connection();   
    
    if (updater) {
       cur_cluster = 1;
@@ -229,18 +228,36 @@ void parser::process_trans(std::set<std::string> *addresses) {
    }
    mtx.lock();
    std::string root = *addresses->begin();
-   if (all_addresses.find(root) != all_addresses.end()) {
+   uint32_t cluster_no = closure_map[root];
+   if (cluster_no != 0) {
+      root = dsets.find_set(root);
+   }
+   else {
+      closure_map[root] = cur_cluster;
+      cur_cluster++;
+      all_addresses.insert(root);
+      dsets.make_set(root);
+   }
+   /*if (all_addresses.find(root) != all_addresses.end()) {
       root = dsets.find_set(root);
    }
    else {
       all_addresses.insert(root);
       dsets.make_set(root);
-   }
+      }*/
    mtx.unlock();
    for (auto addr = std::next(addresses->begin()); addr != addresses->end();
 	addr++) {
       mtx.lock();
-      if (all_addresses.find(*addr) == all_addresses.end()) {
+      /*if (all_addresses.find(*addr) == all_addresses.end()) {
+	all_addresses.insert(*addr);
+	 dsets.make_set(*addr);
+      }*/
+      
+      uint32_t cluster = closure_map[*addr];
+      if (cluster == 0) {
+	 closure_map[*addr] = cur_cluster;
+	 cur_cluster++;
 	 all_addresses.insert(*addr);
 	 dsets.make_set(*addr);
       }
@@ -255,9 +272,8 @@ void parser::close() {
       dsets.compress_sets(all_addresses.begin(), all_addresses.end());
       log_info() << all_addresses.size();
       log_info() << dsets.count_sets(all_addresses.begin(), all_addresses.end());
-      for (auto i = all_addresses.begin(); i != all_addresses.end(); i++) {
-	 log_info() << *i << "\n" << parent_pmap[*i] <<"\n";
-	 //db_insert(con, i->first, dsets.find(i->first));
+      for (auto i = closure_map.begin(); i != closure_map.end(); i++) {
+	 db_insert(con, i->first, closure_map[parent_pmap[i->first]]);
       }
    }
    delete con;
