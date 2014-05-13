@@ -233,11 +233,13 @@ void parser::process_trans(std::set<std::string> *addresses) {
       root = dsets.find_set(root);
    }
    else {
+      all_addresses.insert(root);
       dsets.make_set(root);
    }
    for (auto addr = std::next(addresses->begin()); addr != addresses->end();
 	addr++) {
       if (all_addresses.find(*addr) == all_addresses.end()) {
+	 all_addresses.insert(*addr);
 	 dsets.make_set(*addr);
       }
       dsets.union_set(root, *addr);
@@ -247,7 +249,11 @@ void parser::process_trans(std::set<std::string> *addresses) {
 void parser::close() {
    // update db
    if (updater) {
-      ;
+      dsets.compress_sets(all_addresses.begin(), all_addresses.end());
+      for (auto i = all_addresses.begin(); i != all_addresses.end(); i++) {
+	 log_info() << *i << "\n" << parent_pmap[*i] <<"\n";
+	 //db_insert(con, i->first, dsets.find(i->first));
+      }
    }
    delete con;
 }
