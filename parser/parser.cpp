@@ -118,7 +118,7 @@ void parser::height_fetched(const std::error_code& ec, size_t last_height)
     assert(chain);
     auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
     // Begin fetching the block header.
-    for (int i = 0; i <= last_height; i++) {
+    for (int i = 0; i <= 200000; i++) {
         fetch_block(*chain, i, handle);
     }
 }

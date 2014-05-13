@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 	 }
       }
    }
-    if (src_cluster_no == dst_cluster_no) {
+    if (src_cluster_no != 0 && src_cluster_no == dst_cluster_no) {
         payment_address dst_addr;
         if (!dst_addr.set_encoded(dst))
         {
@@ -114,9 +114,8 @@ int main(int argc, char** argv)
 	    BITCOIN_ASSERT(value >= 0);
        // log_info() << row.spend.hash;
         if (src_out_trans.find(row.spend.hash) != src_out_trans.end()) {
-	        log_info() << src_cluster_no << "|" << dst_cluster_no << "|" 
-		       << dst << "|" << addresses[row.spend.hash] << "|" << row.spend.hash;
-	        log_info() << row.spend.hash;
+	        std::cout << src_cluster_no << "|" << dst_cluster_no << "|" 
+		       << addresses[row.spend.hash] << "|" << dst << "|" << row.spend.hash;
 	        break;
 	    }
       }
@@ -136,9 +135,8 @@ int main(int argc, char** argv)
 	 uint32_t value = row.value;
 	 BITCOIN_ASSERT(value >= 0);
 	    if (src_out_trans.find(row.output.hash) != src_out_trans.end()) {
-	        log_info() << src_cluster_no << "|" << dst_cluster_no << "|" 
-		       << *addr << "|" << addresses[row.output.hash] << "|" << row.output.hash;
-	        log_info() << row.output.hash;
+	        std::cout << src_cluster_no << "|" << dst_cluster_no << "|" 
+		       << "|" << addresses[row.output.hash] << "|" << *addr << "|" << row.output.hash;
 	        break;
 	    }
       }

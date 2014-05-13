@@ -120,8 +120,7 @@ sql::Connection *db_init_connection() {
 
     stmt->execute("CREATE DATABASE IF NOT EXISTS " + table_name);
     stmt->execute("USE " + table_name);
-    stmt->execute("CREATE TABLE IF NOT EXISTS " + table_name + "(address VARCHAR(34), cluster INT)");
-    stmt->execute("ALTER TABLE " + table_name + " ADD PRIMARY KEY(address)");
+    stmt->execute("CREATE TABLE IF NOT EXISTS " + table_name + "(address VARCHAR(34) PRIMARY KEY, cluster INT)");
 
     delete stmt;
     return con;
