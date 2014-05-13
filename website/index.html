@@ -66,10 +66,15 @@
               <img src="./img/logo_text_orange.png"><br />
               <span style="font-size:18px;"> The address <span id="cluster_address" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span> likely belongs<br /> to an entity controlling <span id="cluster_numaddrs">30</span> other addresses and <span id="cluster_btc">0.0</span> ฿. </span>
               <br /><br />
-              <div id="cluster_addresses">
-              </div>
-
+              <div id="cluster_addresses"></div>
             </div>
+
+            <div id="pathresultsdiv" style="display:none">
+              <img src="./img/logo_text_orange.png"><br />
+              <span style="font-size:18px;"> The address <span id="path_source" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span> is connected <br /> to address <span id="path_dest" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span> by transaction <span id="path_trans_id" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span>.
+              <br /><br />
+            </div>
+
             <div class="mastfoot">
               <div class="inner" style="padding-top:10px">
                 <a id="trackclick" href="#">Track</a> &middot;
@@ -108,6 +113,7 @@
     {
       $('#pathdiv').css("display", "none");
       $('#clusterdiv').css("display", "none");
+      $('#pathresultsdiv').css("display". "none");
 
       // clear the clusterdiv, and the cluster_addresses
       $('#cluster_numaddrs').html('');
@@ -122,6 +128,7 @@
     {
       $('#trackdiv').css("display", "none");
       $('#clusterdiv').css("display", "none");
+      $('#pathresultsdiv').css("display". "none");
 
       // clear the clusterdiv, and the cluster_addresses
       $('#cluster_numaddrs').html('');
@@ -255,29 +262,17 @@
             else if(response.status == "success")
             {
               var response_data = response.response_data;
-              /*
-              var address = response_data.address;
-              var cluster_id = response_data.cluster_id;
-              var cluster_addresses_balances = response_data.cluster_addresses_balances;
-              var cluster_btc = response_data.cluster_btc;
-              var cluster_numaddrs = Object.keys(cluster_addresses_balances).length;
-
+              var trans_source_addr = response_data.trans_source_addr;
+              var trans_dest_addr = response_data.trans_dest_addr;
+              var trans_id = response_data.trans_id;
+              
               // Change the values of the dynamic variables
-              $('#cluster_numaddrs').html(String(cluster_numaddrs - 1));
-              $('#cluster_btc').html(String(cluster_btc));
-              $('#cluster_address').html("<a target='_blank' href='https://blockchain.info/address/" + String(address) + "'>" + String(address) + "</a>&nbsp;<span style='color:white'>(" + cluster_addresses_balances[address] + " ฿)</span>");
+              $('#path_source').html("<a target='_blank' href='https://blockchain.info/address/" + address1 + "'>" + address1 + "</a>&nbsp;");
+              $('#path_dest').html("<a target='_blank' href='https://blockchain.info/address/" + address2 + "'>" + address2 + "</a>&nbsp;");
+              $('#path_trans_id').html("<a target='_blank' href='https://blockchain.info/tx/" + trans_id + "'>" + trans_id + "</a>&nbsp;");
 
-              for (var cluster_address in cluster_addresses_balances) 
-              {
-                // address is the name of the main address that was tracked
-                if(cluster_address == address)
-                  continue;
-
-                $('#cluster_addresses').append("<span><a target='_blank' style='text-decoration:none' href='https://blockchain.info/address/" + cluster_address + "'>" + cluster_address + "</a></span>&nbsp;&nbsp;<span style='color:white'>(" + cluster_addresses_balances[cluster_address] + " ฿)</span><br />");
-              }
-              //  alert("Address " + address + " is associated with cluster " + cluster_id);
-            
-              $('#clusterdiv').fadeIn(1000);*/
+              
+              $('#pathresultsdiv').fadeIn(1000);
             }
           }
           catch(error)
