@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 	 BITCOIN_ASSERT(value >= 0);
 	    if (src_out_trans.find(row.output.hash) != src_out_trans.end()) {
 	        std::cout << src_cluster_no << "|" << dst_cluster_no << "|" 
-		       << "|" << addresses[row.output.hash] << "|" << *addr << "|" << row.output.hash;
+		       << addresses[row.output.hash] << "|" << *addr << "|" << row.output.hash;
 	        break;
 	    }
       }
