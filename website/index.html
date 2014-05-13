@@ -71,8 +71,8 @@
 
             <div id="pathresultsdiv" style="display:none">
               <img src="./img/logo_text_orange.png"><br />
-              <span style="font-size:18px;"> The address <span id="path_source" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span> is connected <br /> to address <span id="path_dest" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span> by transaction <span id="path_trans_id" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span>.<br />
-              The transaction is between <span id="path_trans_source" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span>, which is in the same cluster as the first address, and <span id="path_trans_dest" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span>, which is in the same cluster as the second address.
+              <span style="font-size:18px;"> The address <span id="path_source" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span> is connected <br /> to address <span id="path_dest" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span> by transaction <span id="path_trans_id" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span>.<br /><br />
+              <span id="trans_details">The transaction is between <span id="path_trans_source" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span>, <br />which is in the same cluster as the first address, <br />and <span id="path_trans_dest" style="color:#f0ad4e">1dice48cexAaxtGiTRJTNUT1mBqqunzM1</span>, which is in the same cluster as the second address.</span>
               <br /><br />
             </div>
 
@@ -271,11 +271,19 @@
               $('#path_source').html("<a target='_blank' href='https://blockchain.info/address/" + address1 + "'>" + address1 + "</a>&nbsp;");
               $('#path_dest').html("<a target='_blank' href='https://blockchain.info/address/" + address2 + "'>" + address2 + "</a>&nbsp;");
               $('#path_trans_id').html("<a target='_blank' href='https://blockchain.info/tx/" + trans_id + "'>" + trans_id + "</a>&nbsp;");
-              $('#path_trans_source').html("<a target='_blank' href='https://blockchain.info/address/" + trans_source_addr + "'>" + trans_source_addr + "</a>&nbsp;");
-              $('#path_trans_dest').html("<a target='_blank' href='https://blockchain.info/address/" + trans_dest_addr + "'>" + trans_dest_addr + "</a>&nbsp;");
               
+              if(address1 == trans_source_addr && address2 == trans_dest_addr)
+              {
+                $('#path_trans_id').css("display", "none");
+              }
+              else
+              {
+                $('#path_trans_id').css("display", "");
+                $('#path_trans_source').html("<a target='_blank' href='https://blockchain.info/address/" + trans_source_addr + "'>" + trans_source_addr + "</a>&nbsp;");
+                $('#path_trans_dest').html("<a target='_blank' href='https://blockchain.info/address/" + trans_dest_addr + "'>" + trans_dest_addr + "</a>&nbsp;");
+              }
+
               $('#pathresultsdiv').fadeIn(1000);
-            }
           }
           catch(error)
           {
