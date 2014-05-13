@@ -36,7 +36,6 @@ parser::parser(blockchain* chainPtr, bool update) {
         chain->fetch_last_height(height_fetched_func); 
     }
     else {
-
         cur_cluster = db_getmax(con);
         cur_cluster++;
     }
@@ -71,8 +70,8 @@ void parser::update(const block_type& blk) {
                 }
             } // end input loop
             if (size == 0) {
-                //if (updater) process_trans_map(addresses);
-                if (updater) process_transaction(addresses); 
+                if (updater) process_trans_map(addresses);
+                //if (updater) process_transaction(addresses); 
                 else process_transaction(addresses);
                 delete addresses;
             }
@@ -108,7 +107,7 @@ void parser::height_fetched(const std::error_code& ec, size_t last_height)
     assert(chain);
     auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
     // Begin fetching the block header.
-    for (int i = 150000; i <= 151000; i++) {
+    for (int i = 0; i <= last_height; i++) {
         fetch_block(*chain, i, handle);
     }
 }
@@ -157,8 +156,8 @@ void parser::handle_trans_fetch(
         }
         // we have all the addresses we need, process it
         if (addresses->size() == trans_size_map[trans_hash]) {
-            //if (updater) process_trans_map(addresses);
-            if (updater) process_transaction(addresses);
+            if (updater) process_trans_map(addresses);
+            //if (updater) process_transaction(addresses);
             else process_transaction(addresses);
             trans_size_map.erase(trans_hash);
             common_addresses.erase(trans_hash);
