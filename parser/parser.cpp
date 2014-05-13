@@ -119,7 +119,7 @@ void parser::height_fetched(const std::error_code& ec, size_t last_height)
    assert(chain);
    auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
    // Begin fetching the block header.
-   for (int i = 0; i <= last_height; i++) {
+   for (int i = 275000; i <= last_height; i++) {
        fetch_block(*chain, i, handle);
    }
 }
@@ -253,6 +253,7 @@ void parser::close() {
    // update db
    if (updater) {
       dsets.compress_sets(all_addresses.begin(), all_addresses.end());
+      log_info() << all_addresses.size();
       log_info() << dsets.count_sets(all_addresses.begin(), all_addresses.end());
       for (auto i = all_addresses.begin(); i != all_addresses.end(); i++) {
 	 log_info() << *i << "\n" << parent_pmap[*i] <<"\n";
