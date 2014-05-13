@@ -155,7 +155,7 @@
       var url_string =  ROOTPATH + 'btctrackr_ajax.php';
       $.ajax({
         url: url_string,  //Server script to process data
-        type: 'POST',
+        type: 'GET',
         data: { 
           'address': address,
           'function_name': 'get_cluster_from_address'

@@ -7,9 +7,9 @@ require_once("db_functions.php");
 require_once("btctrackr_functions.php");
 
 // This is an AJAX handler for various btctrackr core functions
-if((strcmp($_POST['function_name'], 'get_cluster_from_address')==0) && isset($_POST["address"]))
+if((strcmp($_GET['function_name'], 'get_cluster_from_address')==0) && isset($_GET["address"]))
 {
-	$response = get_cluster_from_address($_POST["address"]);
+	$response = get_cluster_from_address($_GET["address"]);
 	if($response["success"] == true)
 	{
 	    return_ajax_success("success", $response);
