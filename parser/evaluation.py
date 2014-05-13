@@ -12,10 +12,9 @@ cur = db.cursor()
 
 cur.execute("SELECT cluster FROM production WHERE address LIKE \"" + sys.argv[1] +"\"")
 cluster = int(cur.fetchone()[0])
-
-cur.execute("SELECT address FROM production WHERE cluster="+str(cluster))
-ours = []
-if cur.fetchall() is not None:
+if cluster is not None:
+    cur.execute("SELECT address FROM production WHERE cluster="+str(cluster))
+    ours = []
     for row in cur.fetchall():
         ours += row
 
@@ -32,19 +31,13 @@ if decoded['data'] is not None:
 
 our_total = len(ours)
 their_total = len(theirs)
-ours_in_theirs = 0
-theirs_in_ours = 0
+similar = 0
 
 for o in ours:
     if o in theirs:
-        ours_in_theirs += 1
-
-for t in theirs:
-    if t in ours:
-        theirs_in_ours += 1
+        similar += 1
 
 print "Our total: " + str(our_total)
 print "Their total: " + str(their_total)
-print "Ours in Theirs: " + str(ours_in_theirs)
-print "Theirs in Ours: " + str(theirs_in_ours)
+print "Similar: " + str(similar)
 
