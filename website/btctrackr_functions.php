@@ -160,13 +160,11 @@ function on_request_done($content, $url, $ch, $search)
 
     $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);    
     if ($httpcode !== 200) {
-        print "Fetch error $httpcode for '$url'\n";
         return;
     }
 
     $responseobject = json_decode($content, true);
     if (empty($responseobject['data'])) {
-        print "No results found for '$search'\n";
         return;
     }
 
