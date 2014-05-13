@@ -18,7 +18,7 @@ if cluster is not None:
     for row in cur.fetchall():
         ours += row
 
-url = "http://bitiodine.net/api/cluster/" + sys.argv[1]
+url = "http://bitiodine.net/api/cluster/" + sys.argv[1] + "&key=SHAHEED"
 iodine = urllib.urlopen(url)
 result = iodine.read()
 decoded = json.loads(result)
