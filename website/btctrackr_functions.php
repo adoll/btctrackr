@@ -239,6 +239,7 @@ function get_path_between($address1, $address2)
 	$return_array["trans_source_addr"] = $output_tokens[2];
 	$return_array["trans_dest_addr"] = $output_tokens[3];
 	$return_array["trans_id"] = $output_tokens[4];
+	$return_array["success"] = true;
 
 	return $return_array;
 }
