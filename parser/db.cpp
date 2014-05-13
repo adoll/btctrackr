@@ -1,4 +1,5 @@
 #include "db.hpp"
+std::string table_name = "production";
 
 uint32_t db_getmax(sql::Connection *con) {
     
@@ -7,7 +8,7 @@ uint32_t db_getmax(sql::Connection *con) {
     uint32_t result = 0;
     std::string query;
     
-    query = "SELECT MAX(cluster) FROM production";
+    query = "SELECT MAX(cluster) FROM " + table_name;
 
     stmt = con->createStatement();
     res = stmt->executeQuery(query);
@@ -32,7 +33,7 @@ std::unordered_set<std::string>* db_getset(sql::Connection *con, uint32_t cur_no
     std::string query;
     std::string result;
     
-    q << "SELECT * FROM production WHERE cluster='" << cur_no << "'";
+    q << "SELECT * FROM " + table_name + " WHERE cluster='" << cur_no << "'";
     query = q.str();
 
     if (con == NULL) { 
@@ -61,7 +62,7 @@ uint32_t db_get(sql::Connection *con, std::string address) {
     uint32_t result = 0;
     std::string query;
     
-    query = "SELECT cluster FROM production WHERE address LIKE '" + address + "'";
+    query = "SELECT cluster FROM " + table_name + " WHERE address LIKE '" + address + "'";
 
     if (con == NULL) { 
         fprintf(stderr, "NULL connection\n");    
@@ -85,7 +86,7 @@ void db_update(sql::Connection *con, std::string address, uint32_t cluster) {
 
     sql::PreparedStatement *stmt;
 
-    stmt = con->prepareStatement("UPDATE production SET address = ?, cluster = ? WHERE address = ?");
+    stmt = con->prepareStatement("UPDATE " + table_name + "SET address = ?, cluster = ? WHERE address = ?");
     stmt->setString(1, address);
     stmt->setUInt(2, cluster);
     stmt->setString(3, address); 
@@ -98,7 +99,7 @@ void db_insert(sql::Connection *con, std::string address, uint32_t cluster) {
 
     sql::PreparedStatement *stmt;
 
-    stmt = con->prepareStatement("REPLACE INTO production(address, cluster) VALUES (?, ?)");
+    stmt = con->prepareStatement("REPLACE INTO " + table_name + "(address, cluster) VALUES (?, ?)");
     stmt->setString(1, address);
     stmt->setUInt(2, cluster);
     
@@ -117,9 +118,10 @@ sql::Connection *db_init_connection() {
     con = driver->connect("localhost", "root", "privacy");
     stmt = con->createStatement();
 
-    stmt->execute("CREATE DATABASE IF NOT EXISTS production");
-    stmt->execute("USE production");
-    stmt->execute("CREATE TABLE IF NOT EXISTS production(address VARCHAR(34), cluster INT)");
+    stmt->execute("CREATE DATABASE IF NOT EXISTS " + table_name);
+    stmt->execute("USE " + table_name);
+    stmt->execute("CREATE TABLE IF NOT EXISTS " + table_name + "(address VARCHAR(34), cluster INT)");
+    stmt->execute("ALTER TABLE " + table_name + " ADD PRIMARY KEY(address)");
 
     delete stmt;
     return con;
