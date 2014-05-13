@@ -23,8 +23,9 @@
 #include "parser.hpp"
 #include <future>
 #include <limits.h>
+#include <algorithm>
+#include <boost/assign/list_of.hpp>
 using namespace std::placeholders;
-
 
 typedef std::map<std::string,std::size_t> rank_t; // => order on int
 typedef std::map<std::string,std::string> parent_t;
@@ -117,7 +118,7 @@ void parser::height_fetched(const std::error_code& ec, size_t last_height)
     assert(chain);
     auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
     // Begin fetching the block header.
-    for (int i = 0; i <= last_height; i++) {
+    for (int i = 0; i <= 200000; i++) {
         fetch_block(*chain, i, handle);
     }
 }
@@ -227,30 +228,18 @@ void parser::process_trans(std::set<std::string> *addresses) {
    else {
       closure_map[root] = cur_cluster;
       cur_cluster++;
-      all_addresses.insert(root);
       dsets.make_set(root);
    }
-   /*if (all_addresses.find(root) != all_addresses.end()) {
-      root = dsets.find_set(root);
-   }
-   else {
-      all_addresses.insert(root);
-      dsets.make_set(root);
-      }*/
    mtx.unlock();
    for (auto addr = std::next(addresses->begin()); addr != addresses->end();
 	addr++) {
       mtx.lock();
-      /*if (all_addresses.find(*addr) == all_addresses.end()) {
-	all_addresses.insert(*addr);
-	 dsets.make_set(*addr);
-      }*/
       
       uint32_t cluster = closure_map[*addr];
       if (cluster == 0) {
 	 closure_map[*addr] = cur_cluster;
 	 cur_cluster++;
-	 all_addresses.insert(*addr);
+	 
 	 dsets.make_set(*addr);
       }
       dsets.union_set(root, *addr);
@@ -261,12 +250,14 @@ void parser::process_trans(std::set<std::string> *addresses) {
 void parser::close() {
    // update db
    if (updater) {
-      dsets.compress_sets(all_addresses.begin(), all_addresses.end());
-      log_info() << all_addresses.size();
-      log_info() << dsets.count_sets(all_addresses.begin(), all_addresses.end());
+      std::vector<std::string> addresses;
+      dsets.compress_sets(addresses.begin(), addresses.end());
+      log_info() << dsets.count_sets(addresses.begin(), addresses.end());
+
       for (auto i = closure_map.begin(); i != closure_map.end(); i++) {
 	    //db_insert(con, i->first, closure_map[parent_pmap[i->first]]);
           std::cout << i->first << "," << closure_map[parent_pmap[i->first]] << std::endl;
+	      addresses.push_back(i->first);
       }
    }
    delete con;
