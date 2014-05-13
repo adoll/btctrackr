@@ -38,7 +38,6 @@ boost::disjoint_sets<Rank, Parent> dsets(rank_pmap, parent_pmap);
 
 // construct a parser, updating it to the current point in the blockchain
 parser::parser(blockchain* chainPtr, bool update) {
-<<<<<<< HEAD
     chain = chainPtr;
     updater = update;
     con = db_init_connection();
@@ -178,26 +177,26 @@ void parser::handle_trans_fetch(
 
 // given a list of addresses in the same transaction, updates the
 // cluster mapping
-void parser::process_transaction(unordered_set<payment_address> *addresses) {
+void parser::process_transaction(std::set<std::string> *addresses) {
     mtx.lock();
     uint32_t cluster_no = 0;
 
-    unordered_set<string>* cluster = new unordered_set<string>();
+    std::unordered_set<std::string> cluster;
 
     // merging all clusters into one cluster
     for (auto addr = addresses->begin();
             addr != addresses->end(); addr++) {
 
-        cluster->insert(addr->encoded());
-        uint32_t cur_no = db_get(con, addr->encoded()); //
+        cluster.insert(*addr);
+        uint32_t cur_no = db_get(con, *addr); //
         // 0 is the empty cluster, so if it isn't 0 merge everything and erase old
         if (cur_no != 0) {
-            unordered_set<string> *this_cluster = db_getset(con, cur_no);
+            std::unordered_set<std::string> *this_cluster = db_getset(con, cur_no);
             // update cluster no, in this way, we always allocate to smallest id
             if (cur_no < cluster_no || cluster_no == 0) {
                 cluster_no = cur_no;
             }
-            cluster->insert(this_cluster->begin(), this_cluster->end());
+            cluster.insert(this_cluster->begin(), this_cluster->end());
         }
     }
     if (cluster_no == 0) {
@@ -206,8 +205,8 @@ void parser::process_transaction(unordered_set<payment_address> *addresses) {
     }
     // make sure all addresses in the cluster have the right number
 
-    for (auto addr = cluster->begin();
-            addr != cluster->end(); addr++) {
+    for (auto addr = cluster.begin();
+            addr != cluster.end(); addr++) {
         db_insert(con, *addr, cluster_no);
     }
 

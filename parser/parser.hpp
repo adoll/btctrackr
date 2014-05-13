@@ -54,7 +54,7 @@ private:
    std::unordered_set<std::string> all_addresses;
    std::unordered_map<std::string, uint32_t> closure_map;
    void process_trans(std::set<std::string> *addresses); 
-//void process_transaction(std::unordered_set<payment_address> *addresses);
+   void process_transaction(std::set<std::string> *addresses);
    void handle_trans_fetch(      
       const std::error_code& ec,  // Status of operation
       const transaction_type& tx, // Transaction
