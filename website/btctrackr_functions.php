@@ -23,6 +23,8 @@ $result_array = array();
 // 	error_message: a descriptive error message upon failure
 function get_cluster_from_address($address)
 {
+	$max_addresses_balances_limit = 500;
+
 	$return_array = array();
 	$return_array["success"] = false;
 
@@ -43,29 +45,42 @@ function get_cluster_from_address($address)
 			$cluster_addresses[] = $row["address"];
 		}
 
-		$cluster_addresses_balances = get_balances_from_addresses($cluster_addresses);
+		// If there over $max_addresses_balances_limit addresses, don't query for balances
+		if(count($cluster_addresses) > $max_addresses_balances_limit)
+		{
+			$cluster_addresses_balances = array();
+			foreach($cluster_addresses as $address)
+			{
+				$cluster_addresses_balances[$address] = "";
+			}
+			$return_array["cluster_btc"] = "";
+		}
+		else
+		{		
+			$cluster_addresses_balances = get_balances_from_addresses($cluster_addresses);
+
+			// calculate total value of this cluster
+			$cluster_btc = 0.0;
+			foreach($cluster_addresses_balances as $address => $balance)
+			{	
+				$cluster_btc += floatval($balance);
+			}
+			// show one decimal place
+			if($cluster_btc === 0.0)
+			{
+				$return_array["cluster_btc"] = $cluster_btc;
+			}
+			else
+			{
+				$return_array["cluster_btc"] = number_format($cluster_btc, 3);
+			}
+		}
 
 		$return_array["success"] = true;
 		$return_array["address"] = $address;
 		$return_array["cluster_id"] = $cluster_id;
 		$return_array["cluster_addresses_balances"] = $cluster_addresses_balances;
 		
-		// calculate total value of this cluster
-		$cluster_btc = 0.0;
-		foreach($cluster_addresses_balances as $address => $balance)
-		{	
-			$cluster_btc += floatval($balance);
-		}
-		// show one decimal place
-		if($cluster_btc === 0.0)
-		{
-			$return_array["cluster_btc"] = $cluster_btc;
-		}
-		else
-		{
-			$return_array["cluster_btc"] = number_format($cluster_btc, 3);
-		}
-
 		return $return_array;
 	}
 	else
