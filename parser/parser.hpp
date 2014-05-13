@@ -25,6 +25,10 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <mutex>
+#include <boost/property_map/property_map.hpp>
+#include <boost/pending/disjoint_sets.hpp>
+
+
 using namespace bc;
 
 class parser
