@@ -82,8 +82,8 @@ void parser::update(const block_type& blk) {
 	    }
 	 } // end input loop
 	 if (size == 0) {
-	    if (updater) process_trans(addresses);
-	    //else process_transaction(addresses);
+	    if (updater) process_trans(addresses); //
+	    else process_transaction(addresses);
 	    delete addresses;
 	 }
 	 else {
@@ -114,11 +114,11 @@ void parser::height_fetched(const std::error_code& ec, size_t last_height)
         return;
     }
     // Display the block number.
-    log_info() << "height: " << last_height;
+    //log_info() << "height: " << last_height;
     assert(chain);
     auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
     // Begin fetching the block header.
-    for (int i = 0; i <= 200000; i++) {
+    for (int i = 0; i <= last_height; i++) {
         fetch_block(*chain, i, handle);
     }
 }
@@ -139,7 +139,7 @@ void parser::handle_trans_fetch(
         )
 {
    if (ec) {
-      log_info() << "trans fetch fail" << ec.message();
+      log_error() << "trans fetch fail" << ec.message();
    }
    else {
       mtx1.lock();
@@ -167,8 +167,8 @@ void parser::handle_trans_fetch(
       }
       // we have all the addresses we need, process it
       if (addresses->size() == trans_size_map[trans_hash]) {
-	 if (updater) process_trans(addresses);
-	 //else process_transaction(addresses);
+	 if (updater) process_trans(addresses); //
+	 else process_transaction(addresses);
 	 trans_size_map.erase(trans_hash);
 	 common_addresses.erase(trans_hash);
       }
@@ -208,7 +208,8 @@ void parser::process_transaction(std::set<std::string> *addresses) {
 
     for (auto addr = cluster.begin();
             addr != cluster.end(); addr++) {
-        db_insert(con, *addr, cluster_no);
+       // db_insert(con, *addr, cluster_no);
+       std::cout << *addr << "," << cluster_no << std::endl;
     }
 
     mtx.unlock();
@@ -248,17 +249,18 @@ void parser::process_trans(std::set<std::string> *addresses) {
 }
 
 void parser::close() {
-   // update db
-   if (updater) {
-      std::vector<std::string> addresses;
-      dsets.compress_sets(addresses.begin(), addresses.end());
-      log_info() << dsets.count_sets(addresses.begin(), addresses.end());
+    // update db
+    if (updater) {
+        std::vector<std::string> addresses;
+        for (auto i = closure_map.begin(); i != closure_map.end(); i++) {
+            addresses.push_back(i->first); 
+        }
+        dsets.compress_sets(addresses.begin(), addresses.end());
+        log_error() << dsets.count_sets(addresses.begin(), addresses.end());
 
-      for (auto i = closure_map.begin(); i != closure_map.end(); i++) {
-	    //db_insert(con, i->first, closure_map[parent_pmap[i->first]]);
-          std::cout << i->first << "," << closure_map[parent_pmap[i->first]] << std::endl;
-	      addresses.push_back(i->first);
-      }
-   }
-   delete con;
+        for (auto i = closure_map.begin(); i != closure_map.end(); i++) {
+            //db_insert(con, i->first, closure_map[parent_pmap[i->first]]);
+            std::cout << i->first << "," << closure_map[parent_pmap[i->first]] << std::endl;          }
+    }
+    delete con; 
 }
