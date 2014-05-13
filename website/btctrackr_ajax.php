@@ -21,6 +21,20 @@ if((strcmp($_GET['function_name'], 'get_cluster_from_address')==0) && isset($_GE
 		exit;
 	}
 }
+else if((strcmp($_GET['function_name'], 'get_path_between')==0) && isset($_GET["address1"]) && isset($_GET["address2"]))
+{
+	$response = get_path_between($_GET["address1"], $_GET["address2"]);
+	if($response["success"] == true)
+	{
+		return_ajax_success("success", $response);
+		exit;
+	}
+	else
+	{
+		return_ajax_error($response["error_message"]);
+		exit;
+	}
+}
 // return error
 else 
 {

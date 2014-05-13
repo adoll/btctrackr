@@ -153,7 +153,7 @@ function get_balances_from_addresses($addresses)
 	return $result_array;
 }
 
-// This function gets called back for each request that completes
+// This function gets called back for each request that completes (referenced in get_balances_from_addresses)
 function on_request_done($content, $url, $ch, $search) 
 {
     global $result_array;
@@ -204,5 +204,44 @@ function on_request_done($content, $url, $ch, $search)
 		}
 	}
 }
+
+// This function finds a connecting path between two addresses by seeing if any address in the cluster transacted with any address in the second cluster
+// Eventually it will sanitize the addresses by querying the blockr.io API
+// Parameters:
+//	address1: the source address
+//  address2: the destination address
+// Returns:
+//	success: true/false depending on whether this method completed successfully
+//	trans_source_addr: the source address in the transaction that is in the same cluster as $address1
+// 	trans_dest_addr: the destination address in the transaction that is in the same cluster as $address2
+//	trans_id: the id of the transaction
+// 	error_message: a descriptive error message upon failure
+function get_path_between($address1, $address2)
+{
+	$return_array = array();
+	$return_array["success"] = false;
+
+	chdir("/home/ubuntu/btctrackr/parser");
+	exec("sudo ./path $address1 $address2", $output);
+
+	if(count($output) == 0)
+	{
+		// The call to path failed -> chances are these addresses are invalid
+		$return_array["error_message"] = "An error occurred. Please make sure the addresses you entered were valid.";
+		return $return_array;
+	}
+
+	$output_string = $output[1];
+	$output_tokens = explode("|", $output_string);
+
+	$source_cluster_id = $output_tokens[0];
+	$dest_cluster_id = $output_tokens[1];
+	$return_array["trans_source_addr"] = $output_tokens[2];
+	$return_array["trans_dest_addr"] = $output_tokens[3];
+	$return_array["trans_id"] = $output_tokens[4];
+
+	return $return_array;
+}
+
 
 ?>
