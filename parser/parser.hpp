@@ -48,6 +48,8 @@ private:
    std::mutex mtx;
    std::mutex mtx1;
    std::mutex mtx2;
+   uint32_t block_counter = 10000;
+   uint32_t top;
    bool updater;
    // map of transaction to payment address
    std::unordered_map<hash_digest, uint32_t> trans_size_map;

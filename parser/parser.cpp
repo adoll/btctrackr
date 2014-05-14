@@ -26,6 +26,7 @@
 #include <fstream>
 using namespace std::placeholders;
 
+// bunch of stuff for the disjoint sets
 typedef std::map<std::string,std::size_t> rank_t; // => order on int
 typedef std::map<std::string,std::string> parent_t;
 typedef boost::associative_property_map<rank_t> Rank;
@@ -35,9 +36,6 @@ parent_t parent_map;
 Rank rank_pmap(rank_map);
 Parent parent_pmap(parent_map);
 boost::disjoint_sets<Rank, Parent> dsets(rank_pmap, parent_pmap);
-uint32_t block_counter = 10000;
-uint32_t top;
-void update_disjoint();
 
 // construct a parser, updating it to the current point in the blockchain
 parser::parser(blockchain* chainPtr, bool update) {
@@ -45,12 +43,9 @@ parser::parser(blockchain* chainPtr, bool update) {
     updater = update;
     con = db_init_connection();
     if (updater) {
-       //cur_cluster = db_getmax(con);
-       //cur_cluster++;
-       //update_disjoint();
        cur_cluster = 1;
-        auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
-        chain->fetch_last_height(height_fetched_func); 
+       auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
+       chain->fetch_last_height(height_fetched_func); 
     }
     else {
        cur_cluster = db_getmax(con);
@@ -88,7 +83,7 @@ void parser::update(const block_type& blk) {
 	    }
 	 } // end input loop
 	 if (size == 0) {
-	    if (updater) process_trans(addresses); //
+	    if (updater) process_trans(addresses);
 	    else process_transaction(addresses);
 	    delete addresses;
 	 }
@@ -110,11 +105,14 @@ void parser::update(const block_type& blk) {
 
         } // end coinbase if
     }
-   auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
-   mtx2.lock();
-   block_counter++;
-   mtx2.unlock();
-   fetch_block(*chain, block_counter, handle);
+   if (updater) {
+      auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
+      mtx2.lock();
+      block_counter++;
+      mtx2.unlock();
+      if (block_counter < top)
+	 fetch_block(*chain, block_counter, handle);
+   }
 }
 
 void parser::height_fetched(const std::error_code& ec, size_t last_height)
@@ -124,9 +122,9 @@ void parser::height_fetched(const std::error_code& ec, size_t last_height)
         log_error() << "Failed to fetch last height: " << ec.message();
         return;
     }
-    // Display the block number.
-    //log_info() << "height: " << last_height;
+
     assert(chain);
+    top = last_height;
     auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
     // Begin fetching the block header.
     for (int i = 0; i <= 10000; i++) {
@@ -178,7 +176,7 @@ void parser::handle_trans_fetch(
       }
       // we have all the addresses we need, process it
       if (addresses->size() == trans_size_map[trans_hash]) {
-	 if (updater) process_trans(addresses); //
+	 if (updater) process_trans(addresses); 
 	 else process_transaction(addresses);
 	 trans_size_map.erase(trans_hash);
 	 common_addresses.erase(trans_hash);
@@ -216,15 +214,14 @@ void parser::process_transaction(std::set<std::string> *addresses) {
         cur_cluster++;
     }
     // make sure all addresses in the cluster have the right number
-
     for (auto addr = cluster.begin();
             addr != cluster.end(); addr++) {
         db_insert(con, *addr, cluster_no);
     }
-
     mtx.unlock();
 }
 
+// FAST updater using disjoint sets
 void parser::process_trans(std::set<std::string> *addresses) {
    // shouldn't happen
    if (addresses == NULL || addresses->size() < 2) {
