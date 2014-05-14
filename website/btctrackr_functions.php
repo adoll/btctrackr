@@ -1,8 +1,5 @@
 <?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-
 // This file contains core btctrackr functions
 require_once("db_functions.php");
 
@@ -103,11 +100,11 @@ function get_cluster_from_address($track_address)
 		$cluster_addresses_balances = array();
 		if($address_balance === 0.0)
 		{
-			$cluster_addresses_balances[$address] = $address_balance;
+			$cluster_addresses_balances[$track_address] = $address_balance;
 		}
 		else
 		{
-			$cluster_addresses_balances[$address] = number_format($address_balance, 3);
+			$cluster_addresses_balances[$track_address] = number_format($address_balance, 3);
 		}
 		$return_array["success"] = true;
 		$return_array["address"] = $track_address;
