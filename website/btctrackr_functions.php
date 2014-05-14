@@ -86,7 +86,7 @@ function get_cluster_from_address($track_address)
 	else
 	{
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, "http://btc.blockr.io/api/v1/address/info/" . $address);
+		curl_setopt($ch, CURLOPT_URL, "http://btc.blockr.io/api/v1/address/info/" . $track_address);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$response_data = curl_exec($ch);
 		$response_json = json_decode($response_data, true);
@@ -110,7 +110,7 @@ function get_cluster_from_address($track_address)
 			$cluster_addresses_balances[$address] = number_format($address_balance, 3);
 		}
 		$return_array["success"] = true;
-		$return_array["address"] = $address;
+		$return_array["address"] = $track_address;
 		$return_array["cluster_addresses_balances"] = $cluster_addresses_balances;
 		$return_array["cluster_btc"] = $cluster_addresses_balances[$address];
 
