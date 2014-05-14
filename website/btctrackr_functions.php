@@ -21,7 +21,7 @@ $result_array = array();
 //					   this maps addresses (keys) to address balances (values)
 //	cluster_btc: the total bitcoin balance of the cluster
 // 	error_message: a descriptive error message upon failure
-function get_cluster_from_address($address)
+function get_cluster_from_address($track_address)
 {
 	$max_addresses_balances_limit = 500;
 
@@ -29,8 +29,8 @@ function get_cluster_from_address($address)
 	$return_array["success"] = false;
 
 	$mysqli = db_connect();
-	$address = $mysqli->real_escape_string($address);
-	$query = "SELECT cluster FROM " . MAIN_TABLE_NAME . " WHERE address = '$address'";
+	$track_address = $mysqli->real_escape_string($track_address);
+	$query = "SELECT cluster FROM " . MAIN_TABLE_NAME . " WHERE address = '$track_address'";
 	$result = $mysqli->query($query);
 
 	if($row = $result->fetch_assoc())
@@ -77,7 +77,7 @@ function get_cluster_from_address($address)
 		}
 
 		$return_array["success"] = true;
-		$return_array["address"] = $address;
+		$return_array["address"] = $track_address;
 		$return_array["cluster_id"] = $cluster_id;
 		$return_array["cluster_addresses_balances"] = $cluster_addresses_balances;
 		
