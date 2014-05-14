@@ -1,4 +1,5 @@
 #include "db.hpp"
+std::string db_name = "production";
 std::string table_name = "bchain";
 
 uint32_t db_getmax(sql::Connection *con) {
@@ -105,7 +106,7 @@ sql::Connection *db_init_connection() {
     con = driver->connect("localhost", "root", "privacy");
     stmt = con->createStatement();
 
-    stmt->execute("CREATE DATABASE IF NOT EXISTS " + table_name);
+    stmt->execute("CREATE DATABASE IF NOT EXISTS " + db_name);
     stmt->execute("USE " + table_name);
    // stmt->execute("CREATE TABLE IF NOT EXISTS " + table_name + "(address VARCHAR(34) PRIMARY KEY, cluster INT)");
 
