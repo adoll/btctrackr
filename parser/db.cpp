@@ -1,5 +1,5 @@
 #include "db.hpp"
-std::string table_name = "production";
+std::string table_name = "bchain";
 
 uint32_t db_getmax(sql::Connection *con) {
     
@@ -62,7 +62,7 @@ uint32_t db_get(sql::Connection *con, std::string address) {
     uint32_t result = 0;
     std::string query;
     
-    query = "SELECT cluster FROM " + table_name + " WHERE address LIKE '" + address + "'";
+    query = "SELECT cluster FROM " + table_name + " WHERE address='" + address + "'";
 
     if (con == NULL) { 
         fprintf(stderr, "NULL connection\n");    
@@ -120,7 +120,7 @@ sql::Connection *db_init_connection() {
 
     stmt->execute("CREATE DATABASE IF NOT EXISTS " + table_name);
     stmt->execute("USE " + table_name);
-    stmt->execute("CREATE TABLE IF NOT EXISTS " + table_name + "(address VARCHAR(34) PRIMARY KEY, cluster INT)");
+   // stmt->execute("CREATE TABLE IF NOT EXISTS " + table_name + "(address VARCHAR(34) PRIMARY KEY, cluster INT)");
 
     delete stmt;
     return con;

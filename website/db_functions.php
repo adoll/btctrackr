@@ -3,7 +3,7 @@
 define("DB_USERNAME", "root");
 define("DB_PASSWORD", "privacy");
 define("DB_HOSTNAME", "localhost");
-define("DB_NAME", "test");
+define("DB_NAME", "production");
 
 
 function db_connect()
