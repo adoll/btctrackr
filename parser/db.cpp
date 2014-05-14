@@ -82,19 +82,6 @@ uint32_t db_get(sql::Connection *con, std::string address) {
 
 }
 
-void db_update(sql::Connection *con, std::string address, uint32_t cluster) {
-
-    sql::PreparedStatement *stmt;
-
-    stmt = con->prepareStatement("UPDATE " + table_name + "SET address = ?, cluster = ? WHERE address = ?");
-    stmt->setString(1, address);
-    stmt->setUInt(2, cluster);
-    stmt->setString(3, address); 
-    stmt->execute();
-
-    delete stmt;
-}
-
 void db_insert(sql::Connection *con, std::string address, uint32_t cluster) {
 
     sql::PreparedStatement *stmt;
