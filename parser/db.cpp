@@ -107,7 +107,7 @@ sql::Connection *db_init_connection() {
     stmt = con->createStatement();
 
     stmt->execute("CREATE DATABASE IF NOT EXISTS " + db_name);
-    stmt->execute("USE " + table_name);
+    stmt->execute("USE " + db_name);
    // stmt->execute("CREATE TABLE IF NOT EXISTS " + table_name + "(address VARCHAR(34) PRIMARY KEY, cluster INT)");
 
     delete stmt;
