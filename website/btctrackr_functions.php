@@ -6,7 +6,7 @@ ini_set('display_errors', '1');
 // This file contains core btctrackr functions
 require_once("db_functions.php");
 
-define("MAIN_TABLE_NAME", "production");
+define("MAIN_TABLE_NAME", "bchain");
 
 $result_array = array();
 
