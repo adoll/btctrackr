@@ -2,7 +2,7 @@ btctrackr
 =========
 
 #Parser and database setup
-1.Install libbitcoin (http://libbitcoin.dyne.org/download.html)
+1. Install libbitcoin (http://libbitcoin.dyne.org/download.html)
 ..* Their dependences are our dependencies, they have instructions in their README
 2. Install libmysqlcppconn by running "apt-get install libmysqlcppconn-dev"
 3. Run make in parser/
