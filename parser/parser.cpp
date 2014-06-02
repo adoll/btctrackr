@@ -37,20 +37,51 @@ Rank rank_pmap(rank_map);
 Parent parent_pmap(parent_map);
 boost::disjoint_sets<Rank, Parent> dsets(rank_pmap, parent_pmap);
 
-// construct a parser, updating it to the current point in the blockchain
+// construct a parser, if update is true, we start from height 0
+// and update until reaching the latest height, otherwise, 
+// this class expects you to call update for each block
 parser::parser(blockchain* chainPtr, bool update) {
     chain = chainPtr;
     updater = update;
-    con = db_init_connection();
     if (updater) {
        cur_cluster = 1;
        auto height_fetched_func = bind(&parser::height_fetched, this, _1, _2);
        chain->fetch_last_height(height_fetched_func); 
     }
     else {
+       con = db_init_connection();
        cur_cluster = db_getmax(con);
        cur_cluster++;
     }
+}
+
+// called once we know the highest block in the blockchain, this
+// fetches the first MAX_OPEN_BLOCKS
+void parser::height_fetched(const std::error_code& ec, size_t last_height)
+{
+    if (ec)
+    {
+        log_error() << "Failed to fetch last height: " << ec.message();
+        return;
+    }
+
+    assert(chain);
+    top = last_height;
+    auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
+    // Begin fetching the block header.
+    for (int i = 0; i <= MAX_OPEN_BLOCKS; i++) {
+       fetch_block(*chain, i, handle);
+    }
+}
+
+// callback function for when a block is fetched, which happens
+// in last_block_fetched and update
+void parser::handle_block_fetch(
+        const std::error_code& ec,  // Status of operation
+        const block_type& blk)       // Block header
+{
+    if (!ec) this->update(blk);
+
 }
 
 
@@ -107,39 +138,19 @@ void parser::update(const block_type& blk) {
     }
    if (updater) {
       auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
-      mtx2.lock();
+      // open the next block as long  as we aren't at the end
+      // since we only open a new block after the last one was processed,
+      // we won't open too many concurrently
+      counter_mutex.lock();
       block_counter++;
-      mtx2.unlock();
+      counter_mutex.unlock();
       if (block_counter < top)
 	 fetch_block(*chain, block_counter, handle);
    }
 }
 
-void parser::height_fetched(const std::error_code& ec, size_t last_height)
-{
-    if (ec)
-    {
-        log_error() << "Failed to fetch last height: " << ec.message();
-        return;
-    }
-
-    assert(chain);
-    top = last_height;
-    auto handle = bind(&parser::handle_block_fetch, this, _1, _2);
-    // Begin fetching the block header.
-    for (int i = 0; i <= 10000; i++) {
-       fetch_block(*chain, i, handle);
-    }
-}
-
-void parser::handle_block_fetch(
-        const std::error_code& ec,  // Status of operation
-        const block_type& blk)       // Block header
-{
-    if (!ec) this->update(blk);
-
-}
-
+// callback when transaction is fetched, gets the address of an input from the
+// script of the corresponding outpoint transaction
 void parser::handle_trans_fetch(
         const std::error_code& ec,  // Status of operation
         const transaction_type& tx, // Transaction
@@ -151,12 +162,12 @@ void parser::handle_trans_fetch(
       log_error() << "trans fetch fail" << ec.message();
    }
    else {
-      mtx1.lock();
+      trans_mutex.lock();
       uint32_t size = trans_size_map[trans_hash];
       payment_address addr;
       std::set<std::string> *addresses = common_addresses[trans_hash];
       if (addresses == NULL) {
-	 mtx1.unlock();
+	 trans_mutex.unlock();
 	 return;
       }
       if (extract(addr, (tx.outputs.begin() + index)->script)) {
@@ -181,14 +192,15 @@ void parser::handle_trans_fetch(
 	 trans_size_map.erase(trans_hash);
 	 common_addresses.erase(trans_hash);
       }
-      mtx1.unlock();
+      trans_mutex.unlock();
    }
 }
 
 // given a list of addresses in the same transaction, updates the
-// cluster mapping
+// cluster mapping, this is used for the incremental updater (block by block)
+// unfortunately, it is much too slow.
 void parser::process_transaction(std::set<std::string> *addresses) {
-    mtx.lock();
+    disjoint_mutex.lock();
     uint32_t cluster_no = 0;
 
     std::unordered_set<std::string> cluster;
@@ -218,7 +230,7 @@ void parser::process_transaction(std::set<std::string> *addresses) {
             addr != cluster.end(); addr++) {
         db_insert(con, *addr, cluster_no);
     }
-    mtx.unlock();
+    disjoint_mutex.unlock();
 }
 
 // FAST updater using disjoint sets
@@ -227,7 +239,7 @@ void parser::process_trans(std::set<std::string> *addresses) {
    if (addresses == NULL || addresses->size() < 2) {
       return;
    }
-   mtx.lock();
+   disjoint_mutex.lock();
    std::string root = *addresses->begin();
    uint32_t cluster_no = closure_map[root];
    if (cluster_no != 0) {
@@ -238,10 +250,10 @@ void parser::process_trans(std::set<std::string> *addresses) {
       cur_cluster++;
       dsets.make_set(root);
    }
-   mtx.unlock();
+   disjoint_mutex.unlock();
    for (auto addr = std::next(addresses->begin()); addr != addresses->end();
 	addr++) {
-      mtx.lock();
+      disjoint_mutex.lock();
       
       uint32_t cluster = closure_map[*addr];
       if (cluster == 0) {
@@ -251,7 +263,7 @@ void parser::process_trans(std::set<std::string> *addresses) {
 	 dsets.make_set(*addr);
       }
       dsets.union_set(root, *addr);
-      mtx.unlock();
+      disjoint_mutex.unlock();
    }
 }
 
@@ -262,12 +274,17 @@ void parser::close() {
         for (auto i = closure_map.begin(); i != closure_map.end(); i++) {
             addresses.push_back(i->first); 
         }
+	// make sure each set has only one root among all
         dsets.compress_sets(addresses.begin(), addresses.end());
         log_error() << dsets.count_sets(addresses.begin(), addresses.end());
 
         for (auto i = closure_map.begin(); i != closure_map.end(); i++) {
 	   // write to file so we can batch insert into db
-	   std::cout << i->first << "," << closure_map[parent_pmap[i->first]] << std::endl;          }
+	   std::cout << i->first << "," << closure_map[parent_pmap[i->first]] 
+		     << std::endl;          
+	}
     } 
-    delete con; 
+    else {
+       delete con; 
+    }
 }

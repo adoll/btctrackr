@@ -41,19 +41,32 @@ public:
    void close();
 
 private:
-
+   // the number of blocks that can be open at once
+   // setting this too high results in ram exhaustion
+   const uint32_t MAX_OPEN_BLOCKS = 10000;
    blockchain* chain = nullptr;
+   // next int id to be assigned to an address
    uint32_t cur_cluster;
-   // used in process_transaction
-   std::mutex mtx;
-   std::mutex mtx1;
-   std::mutex mtx2;
-   uint32_t block_counter = 10000;
+   // mutex for the disjoint set and database, ensure no transaction
+   // is being processed concurrently
+   std::mutex disjoint_mutex;
+   // ensure that the transaction datastructures are being used safely
+   std::mutex trans_mutex;
+   // ensure that the block_counter is not accessed unsafely
+   std::mutex counter_mutex;
+   // the block we are currently on, starts at MAX_BLOCKS since we open
+   // those all at once
+   uint32_t block_counter = MAX_OPEN_BLOCKS;
+   // max block to open
    uint32_t top;
+   // identifies whether parser should start at beginning of blockchain
+   // or try to incrementally update
    bool updater;
-   // map of transaction to payment address
+   // map of transaction hash to the number of unique input addresses
    std::unordered_map<hash_digest, uint32_t> trans_size_map;
+   // map of transaction hash to the set of unique input addresses (a closure)
    std::unordered_map<hash_digest, std::set<std::string>*> common_addresses;
+   // map of addresses (represented as strings) to a unique integer identifier
    std::unordered_map<std::string, uint32_t> closure_map;
    void process_trans(std::set<std::string> *addresses); 
    void process_transaction(std::set<std::string> *addresses);
